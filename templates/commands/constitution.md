@@ -14,6 +14,27 @@ $ARGUMENTS
 
 You **MUST** consider the user input before proceeding (if not empty).
 
+## Default Prompt Input
+
+Before processing placeholders, load the default constitution prompt from:
+
+`.specify/templates/constitution-prompt.md`
+
+If the file exists, treat its contents as the baseline instruction set for
+`/speckit.constitution`.
+
+### Input Merge Rules (Required)
+
+1. Build an **effective input** by combining:
+   - Baseline: `.specify/templates/constitution-prompt.md` (if present)
+   - User input: `$ARGUMENTS` (if provided)
+2. If both are present, append user input as **additional directives** and
+   resolve conflicts in favor of explicit user input.
+3. If only baseline exists, use baseline as the effective input.
+4. If only user input exists, use user input as the effective input.
+5. Do not ignore baseline constraints unless the user explicitly requests to
+   replace them.
+
 ## Outline
 
 You are updating the project constitution at `.specify/memory/constitution.md`. This file is a TEMPLATE containing placeholder tokens in square brackets (e.g. `[PROJECT_NAME]`, `[PRINCIPLE_1_NAME]`). Your job is to (a) collect/derive concrete values, (b) fill the template precisely, and (c) propagate any amendments across dependent artifacts.
@@ -27,7 +48,9 @@ Follow this execution flow:
    **IMPORTANT**: The user might require less or more principles than the ones used in the template. If a number is specified, respect that - follow the general template. You will update the doc accordingly.
 
 2. Collect/derive values for placeholders:
-   - If user input (conversation) supplies a value, use it.
+   - Use the **effective input** (baseline prompt + merged user directives) as
+     the primary source of truth for principle content.
+   - If merged input supplies a value, use it.
     - Otherwise infer from existing repo context (README, docs, prior constitution versions if embedded).
     - Architectural reference requirement: if `project-context.md` exists, treat it as a primary
        architectural input when deriving principles, constraints, and governance language.
