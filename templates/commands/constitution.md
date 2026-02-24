@@ -28,7 +28,11 @@ Follow this execution flow:
 
 2. Collect/derive values for placeholders:
    - If user input (conversation) supplies a value, use it.
-   - Otherwise infer from existing repo context (README, docs, prior constitution versions if embedded).
+    - Otherwise infer from existing repo context (README, docs, prior constitution versions if embedded).
+    - Architectural reference requirement: if `project-context.md` exists, treat it as a primary
+       architectural input when deriving principles, constraints, and governance language.
+    - In multi-repo workspaces, check each repository root for `project-context.md` and
+       incorporate relevant architectural constraints into the constitution context.
    - For governance dates: `RATIFICATION_DATE` is the original adoption date (if unknown ask or mark TODO), `LAST_AMENDED_DATE` is today if changes are made, otherwise keep previous.
    - `CONSTITUTION_VERSION` must increment according to semantic versioning rules:
      - MAJOR: Backward incompatible governance/principle removals or redefinitions.
@@ -41,6 +45,8 @@ Follow this execution flow:
    - Preserve heading hierarchy and comments can be removed once replaced unless they still add clarifying guidance.
    - Ensure each Principle section: succinct name line, paragraph (or bullet list) capturing non‑negotiable rules, explicit rationale if not obvious.
    - Ensure Governance section lists amendment procedure, versioning policy, and compliance review expectations.
+    - Ensure the constitution explicitly states that available `project-context.md` files are
+       authoritative architectural references for specification and planning activities.
 
 4. Consistency propagation checklist (convert prior checklist into active validations):
    - Read `.specify/templates/plan-template.md` and ensure any "Constitution Check" or rules align with updated principles.
@@ -62,6 +68,8 @@ Follow this execution flow:
    - Version line matches report.
    - Dates ISO format YYYY-MM-DD.
    - Principles are declarative, testable, and free of vague language ("should" → replace with MUST/SHOULD rationale where appropriate).
+    - If `project-context.md` exists in one or more repos, verify the constitution includes an
+       explicit reference to those files as architectural guidance.
 
 7. Write the completed constitution back to `.specify/memory/constitution.md` (overwrite).
 
