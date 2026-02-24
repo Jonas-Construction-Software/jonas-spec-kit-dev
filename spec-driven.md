@@ -72,11 +72,20 @@ The key is treating specifications as the source of truth, with code as the gene
 
 ## Streamlining SDD with Commands
 
-The SDD methodology is significantly enhanced through three powerful commands that automate the specification → planning → tasking workflow:
+The SDD methodology is significantly enhanced through four powerful commands that automate the context → specification → planning → tasking workflow:
+
+### The `/speckit.context` Command
+
+Before writing a feature specification, this command gathers implementation context that improves specification and planning quality:
+
+1. **Context Discovery**: Identifies dependencies, constraints, and integration touchpoints relevant to the feature
+2. **Research Capture**: Collects findings on libraries, performance considerations, and security implications
+3. **Artifact Generation**: Produces context artifacts that can be referenced during technical planning
+4. **Specification Readiness**: Reduces ambiguity before requirements drafting and architecture decisions
 
 ### The `/speckit.specify` Command
 
-This command transforms a simple feature description (the user-prompt) into a complete, structured specification with automatic repository management:
+After context gathering, this command transforms a simple feature description (the user-prompt) into a complete, structured specification with automatic repository management:
 
 1. **Automatic Feature Numbering**: Scans existing specs to determine the next feature number (e.g., 001, 002, 003)
 2. **Branch Creation**: Generates a semantic branch name from your description and creates it automatically
@@ -120,7 +129,13 @@ Total: ~12 hours of documentation work
 **SDD with Commands Approach:**
 
 ```bash
-# Step 1: Create the feature specification (5 minutes)
+# Step 1: Gather implementation context (5 minutes)
+/speckit.context Focus on WebSocket library compatibility, scaling constraints, and security requirements
+
+# This automatically:
+# - Produces context artifacts and constraints for the feature
+
+# Step 2: Create the feature specification (5 minutes)
 /speckit.specify Real-time chat system with message history and user presence
 
 # This automatically:
@@ -128,22 +143,23 @@ Total: ~12 hours of documentation work
 # - Generates specs/003-chat-system/spec.md
 # - Populates it with structured requirements
 
-# Step 2: Generate implementation plan (5 minutes)
+# Step 3: Generate implementation plan (5 minutes)
 /speckit.plan WebSocket for real-time messaging, PostgreSQL for history, Redis for presence
 
-# Step 3: Generate executable tasks (5 minutes)
+# Step 4: Generate executable tasks (5 minutes)
 /speckit.tasks
 
 # This automatically creates:
 # - specs/003-chat-system/plan.md
 # - specs/003-chat-system/research.md (WebSocket library comparisons)
+# - specs/003-chat-system/context.md (Implementation context and constraints)
 # - specs/003-chat-system/data-model.md (Message and User schemas)
 # - specs/003-chat-system/contracts/ (WebSocket events, REST endpoints)
 # - specs/003-chat-system/quickstart.md (Key validation scenarios)
 # - specs/003-chat-system/tasks.md (Task list derived from the plan)
 ```
 
-In 15 minutes, you have:
+In 20 minutes, you have:
 
 - A complete feature specification with user stories and acceptance criteria
 - A detailed implementation plan with technology choices and rationale
