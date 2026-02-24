@@ -800,9 +800,6 @@ def download_and_extract_template(project_path: Path, ai_assistant: str, script_
             repo_name=repo_name
         )
         if tracker:
-            debug=debug,
-            github_token=github_token
-        if tracker:
             tracker.complete("fetch", f"release {meta['release']} ({meta['size']:,} bytes)")
             tracker.add("download", "Download template")
             tracker.complete("download", meta['filename'])
