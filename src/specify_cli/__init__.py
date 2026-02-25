@@ -1,3 +1,6 @@
+# Default repository owner and name for Jonas Spec Kit
+DEFAULT_REPO_OWNER = "Jonas-Construction-Software"
+DEFAULT_REPO_NAME = "jonas-spec-kit"
 #!/usr/bin/env python3
 # /// script
 # requires-python = ">=3.11"
@@ -666,9 +669,7 @@ def merge_json_files(existing_path: Path, new_content: dict, verbose: bool = Fal
 
     return merged
 
-def download_template_from_github(ai_assistant: str, download_dir: Path, *, script_type: str = "sh", verbose: bool = True, show_progress: bool = True, client: httpx.Client = None, debug: bool = False, github_token: str = None) -> Tuple[Path, dict]:
-    repo_owner = "github"
-    repo_name = "spec-kit"
+def download_template_from_github(ai_assistant: str, download_dir: Path, *, script_type: str = "sh", verbose: bool = True, show_progress: bool = True, client: httpx.Client = None, debug: bool = False, github_token: str = None, repo_owner: str = DEFAULT_REPO_OWNER, repo_name: str = DEFAULT_REPO_NAME) -> Tuple[Path, dict]:
     if client is None:
         client = httpx.Client(verify=ssl_context)
 
@@ -780,14 +781,11 @@ def download_template_from_github(ai_assistant: str, download_dir: Path, *, scri
     }
     return zip_path, metadata
 
-def download_and_extract_template(project_path: Path, ai_assistant: str, script_type: str, is_current_dir: bool = False, *, verbose: bool = True, tracker: StepTracker | None = None, client: httpx.Client = None, debug: bool = False, github_token: str = None) -> Path:
+def download_and_extract_template(project_path: Path, ai_assistant: str, script_type: str, is_current_dir: bool = False, *, verbose: bool = True, tracker: StepTracker | None = None, client: httpx.Client = None, debug: bool = False, github_token: str = None, repo_owner: str = DEFAULT_REPO_OWNER, repo_name: str = DEFAULT_REPO_NAME) -> Tuple[Path, dict]:
     """Download the latest release and extract it to create a new project.
-    Returns project_path. Uses tracker if provided (with keys: fetch, download, extract, cleanup)
+    Returns (project_path, metadata). Uses tracker if provided (with keys: fetch, download, extract, cleanup)
     """
     current_dir = Path.cwd()
-
-    if tracker:
-        tracker.start("fetch", "contacting GitHub API")
     try:
         zip_path, meta = download_template_from_github(
             ai_assistant,
@@ -797,7 +795,9 @@ def download_and_extract_template(project_path: Path, ai_assistant: str, script_
             show_progress=(tracker is None),
             client=client,
             debug=debug,
-            github_token=github_token
+            github_token=github_token,
+            repo_owner=repo_owner,
+            repo_name=repo_name
         )
         if tracker:
             tracker.complete("fetch", f"release {meta['release']} ({meta['size']:,} bytes)")
@@ -927,7 +927,7 @@ def download_and_extract_template(project_path: Path, ai_assistant: str, script_
             elif verbose:
                 console.print(f"Cleaned up: {zip_path.name}")
 
-    return project_path
+    return project_path, meta
 
 
 def ensure_executable_scripts(project_path: Path, tracker: StepTracker | None = None) -> None:
@@ -1225,6 +1225,8 @@ def init(
     debug: bool = typer.Option(False, "--debug", help="Show verbose diagnostic output for network and extraction failures"),
     github_token: str = typer.Option(None, "--github-token", help="GitHub token to use for API requests (or set GH_TOKEN or GITHUB_TOKEN environment variable)"),
     ai_skills: bool = typer.Option(False, "--ai-skills", help="Install Prompt.MD templates as agent skills (requires --ai)"),
+    repo_owner: str = typer.Option(DEFAULT_REPO_OWNER, "--repo-owner", help=f"GitHub repo owner for template (default: {DEFAULT_REPO_OWNER})"),
+    repo_name: str = typer.Option(DEFAULT_REPO_NAME, "--repo-name", help=f"GitHub repo name for template (default: {DEFAULT_REPO_NAME})"),
 ):
     """
     Initialize a new Specify project from the latest template.
@@ -1425,6 +1427,7 @@ def init(
 
     # Track git error message outside Live context so it persists
     git_error_message = None
+    template_metadata = None
 
     with Live(tracker.render(), console=console, refresh_per_second=8, transient=True) as live:
         tracker.attach_refresh(lambda: live.update(tracker.render()))
@@ -1433,7 +1436,19 @@ def init(
             local_ssl_context = ssl_context if verify else False
             local_client = httpx.Client(verify=local_ssl_context)
 
-            download_and_extract_template(project_path, selected_ai, selected_script, here, verbose=False, tracker=tracker, client=local_client, debug=debug, github_token=github_token)
+            _, template_metadata = download_and_extract_template(
+                project_path,
+                selected_ai,
+                selected_script,
+                here,
+                verbose=False,
+                tracker=tracker,
+                client=local_client,
+                debug=debug,
+                github_token=github_token,
+                repo_owner=repo_owner,
+                repo_name=repo_name
+            )
 
             # For generic agent, rename placeholder directory to user-specified path
             if selected_ai == "generic" and ai_commands_dir:
@@ -1511,6 +1526,12 @@ def init(
 
     console.print(tracker.render())
     console.print("\n[bold green]Project ready.[/bold green]")
+
+    if template_metadata:
+        console.print(
+            f"[cyan]Template source:[/cyan] {repo_owner}/{repo_name}"
+            f" [bright_black](release {template_metadata.get('release', 'unknown')})[/bright_black]"
+        )
     
     # Show git error details if initialization failed
     if git_error_message:
@@ -1632,7 +1653,8 @@ def check():
         console.print("[dim]Tip: Install an AI assistant for the best experience[/dim]")
 
 @app.command()
-def version():
+@app.command()
+def version(repo_owner: str = typer.Option(DEFAULT_REPO_OWNER, "--repo-owner", help=f"GitHub repo owner for template (default: {DEFAULT_REPO_OWNER})"), repo_name: str = typer.Option(DEFAULT_REPO_NAME, "--repo-name", help=f"GitHub repo name for template (default: {DEFAULT_REPO_NAME})")):
     """Display version and system information."""
     import platform
     import importlib.metadata
@@ -1656,8 +1678,6 @@ def version():
             pass
     
     # Fetch latest template release version
-    repo_owner = "github"
-    repo_name = "spec-kit"
     api_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/releases/latest"
     
     template_version = "unknown"
