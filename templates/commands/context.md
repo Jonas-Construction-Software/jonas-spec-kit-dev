@@ -77,15 +77,31 @@ Document:
 - Relevant integrations
 - Deployment or hosting context if identifiable
 
-### 2.3 Diagram Instructions
-Do **not** generate diagrams within this context file.
-Insert **instructions** inside `project-context.md` indicating where diagrams
-should be generated.
+### 2.3 Diagram Generation
+**Generate actual Mermaid diagrams** to illustrate architecture and workflows.
 
-Use descriptive placeholders such as:
-- `[Insert Mermaid diagram illustrating high-level context]`
-- `[Insert Mermaid diagram showing package relationships]`
-- `[Insert Mermaid sequence diagram of main workflow]`
+Required diagram types:
+- **System Context** (Section 1): High-level overview showing system boundaries and external integrations
+- **Architecture/Data Flow** (Section 3): Component interactions and data movement
+- **Sequence Diagrams**: Key workflows or request flows (where applicable)
+
+Diagram requirements:
+- Use standard Mermaid syntax (flowchart, sequenceDiagram, classDiagram, etc.)
+- Keep diagrams focused and readable (max 10-15 nodes for flowcharts)
+- Label relationships clearly
+- Use consistent naming conventions
+- Wrap in proper Mermaid code blocks: ` ```mermaid ... ``` `
+- **Generate diagrams based on actual repository analysis**, not generic templates
+
+Example system context diagram:
+```mermaid
+graph LR
+    Client[Angular Client] --> API[OCR-API]
+    API --> Functions[Azure Functions]
+    Functions --> Storage[(Azure Storage)]
+    Functions --> Queue[(Azure Queue)]
+    Functions --> Table[(Azure Table)]
+```
 
 ### 2.4 Code Quality Signals
 Capture observable indicators, including:
@@ -128,13 +144,13 @@ apply, include the heading with a short explanation.
 19. Quick Start Example
 20. Changelog
 
-**Diagrams should be represented only as placeholders containing instructions.**
+**Generate Mermaid diagrams** for sections that benefit from visual representation (typically sections 1, 3, and optionally 7).
 
 ---
 
 ## 4) Authoring Conventions
 - Markdown only
-- Use placeholders for diagrams
+- Generate Mermaid diagrams using proper code block syntax: ` ```mermaid ... ``` `
 - No secrets or sensitive data
 - Keep text clear and concise
 - Use ISO date formats
@@ -143,20 +159,73 @@ apply, include the heading with a short explanation.
 ---
 
 ## 5) Quality Gates
-Before writing the output file:
-- Ensure every required section is present
-- No `[TBD]` placeholders
-- No sensitive information
-- Diagram placeholders must provide clear instructions
+
+### 5.1 Pre-Generation Validation
+Before generating content for each phase:
+- Ensure all required sections for that phase have been planned
+- Verify no `[TBD]` placeholders will be used
+- Confirm no sensitive information will be included
+
+### 5.2 Per-Phase Validation
+After generating content for each phase:
+- Verify all assigned sections are complete
+- Ensure Mermaid diagrams use valid syntax and render correctly
+- Check section numbering matches template
+- Confirm diagrams are relevant and accurately represent the architecture
+
+### 5.3 Final Validation
+After completing all 5 writing phases:
+- Confirm all 21 sections (0-20) are present
+- Verify file structure matches template
+- Ensure no sensitive data was written
 
 ---
 
 ## 6) File Output Rules
+
+### 6.1 File Location & Confirmation
 - Write to: `<repo-root>/project-context.md`
 - If file exists, require per-repo user confirmation (`Y/N`) before overwrite
 - If overwrite is not approved, do not write the file for that repository
+
+### 6.2 Phased Writing Strategy
+To ensure reliability and prevent context overflow, write the file incrementally:
+
+**Pre-Write Phase:**
+1. If `project-context.md` exists and user approved overwrite:
+   - Create backup: `project-context.md.backup.YYYYMMDD_HHMMSS` (use current timestamp)
+   - Delete the original `project-context.md`
+   - Create new empty `project-context.md`
+
+**Writing Phase:**
+Write content in **5 sequential phases** (do not attempt to write all sections at once):
+
+- **Phase 1**: Write sections 0-4 (TL;DR through Tech Stack)
+- **Phase 2**: Write sections 5-8 (Configuration through UI/Frontend)
+- **Phase 3**: Write sections 9-12 (Local Development through Security)
+- **Phase 4**: Write sections 13-16 (Feature Integration through Files Referenced)
+- **Phase 5**: Write sections 17-20 (Open Questions through Changelog) + Appendix
+
+Each phase must:
+1. Generate content for assigned sections only
+2. Append to `project-context.md` using atomic write operation
+3. Verify write succeeded before proceeding to next phase
+4. If write fails, stop and report error with phase number
+
+**Post-Write Phase:**
+1. Verify complete file contains all 21 sections (0-20)
+2. If verification passes: delete backup file
+3. If verification fails: restore from backup and report error
+
+### 6.3 Encoding & Format
 - Use UTF‑8 encoding
-- End with newline
+- End file with newline
+- Preserve Markdown formatting
+
+### 6.4 Error Handling
+- If any phase fails: keep backup, report specific phase and error
+- If backup creation fails: abort and do not proceed with overwrite
+- If restoration needed: copy backup back to `project-context.md`
 
 ---
 
@@ -175,7 +244,15 @@ Brief summary of the repository’s purpose and key conventions.
 ---
 
 ## 1) System Overview
-[Insert Mermaid diagram illustrating high-level system context]
+
+```mermaid
+graph LR
+    User[User/Client] --> App[Application]
+    App --> DB[(Database)]
+    App --> External[External Service]
+```
+
+*Replace with actual system context diagram showing components and boundaries.*
 
 ---
 
@@ -187,7 +264,22 @@ Brief summary of the repository’s purpose and key conventions.
 ---
 
 ## 3) Architecture & Data Flow
-[Insert Mermaid diagram illustrating major workflows]
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API
+    participant Service
+    participant DB
+    Client->>API: Request
+    API->>Service: Process
+    Service->>DB: Query
+    DB-->>Service: Data
+    Service-->>API: Response
+    API-->>Client: Result
+```
+
+*Replace with actual architecture/workflow diagram relevant to this repository.*
 
 ---
 
@@ -285,7 +377,9 @@ Reverse‑engineering summary
 - Excluded (matches *-document): <K>
 - Skipped (No source detected): <M>
 - Skipped (Overwrite not approved): <P>
-- Files written:
-  - <repo1>/project-context.md
-  - <repo2>/project-context.md
+- Successfully written:
+  - <repo1>/project-context.md (5/5 phases)
+  - <repo2>/project-context.md (5/5 phases)
+- Failed writes (if any):
+  - <repo3>/project-context.md (failed at phase X: <error>)
 ```
