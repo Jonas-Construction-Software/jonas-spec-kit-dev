@@ -14,6 +14,27 @@ $ARGUMENTS
 
 You **MUST** consider the user input before proceeding (if not empty).
 
+## Default Prompt Input
+
+Before processing placeholders, load the default constitution prompt from:
+
+`.specify/templates/constitution-prompt.md`
+
+If the file exists, treat its contents as the baseline instruction set for
+`/speckit.constitution`.
+
+### Input Merge Rules (Required)
+
+1. Build an **effective input** by combining:
+   - Baseline: `.specify/templates/constitution-prompt.md` (if present)
+   - User input: `$ARGUMENTS` (if provided)
+2. If both are present, append user input as **additional directives** and
+   resolve conflicts in favor of explicit user input.
+3. If only baseline exists, use baseline as the effective input.
+4. If only user input exists, use user input as the effective input.
+5. Do not ignore baseline constraints unless the user explicitly requests to
+   replace them.
+
 ## Outline
 
 You are updating the project constitution at `.specify/memory/constitution.md`. This file is a TEMPLATE containing placeholder tokens in square brackets (e.g. `[PROJECT_NAME]`, `[PRINCIPLE_1_NAME]`). Your job is to (a) collect/derive concrete values, (b) fill the template precisely, and (c) propagate any amendments across dependent artifacts.
@@ -27,8 +48,14 @@ Follow this execution flow:
    **IMPORTANT**: The user might require less or more principles than the ones used in the template. If a number is specified, respect that - follow the general template. You will update the doc accordingly.
 
 2. Collect/derive values for placeholders:
-   - If user input (conversation) supplies a value, use it.
-   - Otherwise infer from existing repo context (README, docs, prior constitution versions if embedded).
+   - Use the **effective input** (baseline prompt + merged user directives) as
+     the primary source of truth for principle content.
+   - If merged input supplies a value, use it.
+    - Otherwise infer from existing repo context (README, docs, prior constitution versions if embedded).
+    - Architectural reference requirement: if `project-context.md` exists, treat it as a primary
+       architectural input when deriving principles, constraints, and governance language.
+    - In multi-repo workspaces, check each repository root for `project-context.md` and
+       incorporate relevant architectural constraints into the constitution context.
    - For governance dates: `RATIFICATION_DATE` is the original adoption date (if unknown ask or mark TODO), `LAST_AMENDED_DATE` is today if changes are made, otherwise keep previous.
    - `CONSTITUTION_VERSION` must increment according to semantic versioning rules:
      - MAJOR: Backward incompatible governance/principle removals or redefinitions.
@@ -41,6 +68,8 @@ Follow this execution flow:
    - Preserve heading hierarchy and comments can be removed once replaced unless they still add clarifying guidance.
    - Ensure each Principle section: succinct name line, paragraph (or bullet list) capturing non‑negotiable rules, explicit rationale if not obvious.
    - Ensure Governance section lists amendment procedure, versioning policy, and compliance review expectations.
+    - Ensure the constitution explicitly states that available `project-context.md` files are
+       authoritative architectural references for specification and planning activities.
 
 4. Consistency propagation checklist (convert prior checklist into active validations):
    - Read `.specify/templates/plan-template.md` and ensure any "Constitution Check" or rules align with updated principles.
@@ -62,6 +91,8 @@ Follow this execution flow:
    - Version line matches report.
    - Dates ISO format YYYY-MM-DD.
    - Principles are declarative, testable, and free of vague language ("should" → replace with MUST/SHOULD rationale where appropriate).
+    - If `project-context.md` exists in one or more repos, verify the constitution includes an
+       explicit reference to those files as architectural guidance.
 
 7. Write the completed constitution back to `.specify/memory/constitution.md` (overwrite).
 
