@@ -781,9 +781,9 @@ def download_template_from_github(ai_assistant: str, download_dir: Path, *, scri
     }
     return zip_path, metadata
 
-def download_and_extract_template(project_path: Path, ai_assistant: str, script_type: str, is_current_dir: bool = False, *, verbose: bool = True, tracker: StepTracker | None = None, client: httpx.Client = None, debug: bool = False, github_token: str = None, repo_owner: str = DEFAULT_REPO_OWNER, repo_name: str = DEFAULT_REPO_NAME) -> Path:
+def download_and_extract_template(project_path: Path, ai_assistant: str, script_type: str, is_current_dir: bool = False, *, verbose: bool = True, tracker: StepTracker | None = None, client: httpx.Client = None, debug: bool = False, github_token: str = None, repo_owner: str = DEFAULT_REPO_OWNER, repo_name: str = DEFAULT_REPO_NAME) -> Tuple[Path, dict]:
     """Download the latest release and extract it to create a new project.
-    Returns project_path. Uses tracker if provided (with keys: fetch, download, extract, cleanup)
+    Returns (project_path, metadata). Uses tracker if provided (with keys: fetch, download, extract, cleanup)
     """
     current_dir = Path.cwd()
     try:
@@ -927,7 +927,7 @@ def download_and_extract_template(project_path: Path, ai_assistant: str, script_
             elif verbose:
                 console.print(f"Cleaned up: {zip_path.name}")
 
-    return project_path
+    return project_path, meta
 
 
 def ensure_executable_scripts(project_path: Path, tracker: StepTracker | None = None) -> None:
@@ -1427,6 +1427,7 @@ def init(
 
     # Track git error message outside Live context so it persists
     git_error_message = None
+    template_metadata = None
 
     with Live(tracker.render(), console=console, refresh_per_second=8, transient=True) as live:
         tracker.attach_refresh(lambda: live.update(tracker.render()))
@@ -1435,7 +1436,7 @@ def init(
             local_ssl_context = ssl_context if verify else False
             local_client = httpx.Client(verify=local_ssl_context)
 
-            download_and_extract_template(
+            _, template_metadata = download_and_extract_template(
                 project_path,
                 selected_ai,
                 selected_script,
@@ -1525,6 +1526,12 @@ def init(
 
     console.print(tracker.render())
     console.print("\n[bold green]Project ready.[/bold green]")
+
+    if template_metadata:
+        console.print(
+            f"[cyan]Template source:[/cyan] {repo_owner}/{repo_name}"
+            f" [bright_black](release {template_metadata.get('release', 'unknown')})[/bright_black]"
+        )
     
     # Show git error details if initialization failed
     if git_error_message:
