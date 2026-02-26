@@ -1,6 +1,3 @@
-# Default repository owner and name for Jonas Spec Kit
-DEFAULT_REPO_OWNER = "Jonas-Construction-Software"
-DEFAULT_REPO_NAME = "jonas-spec-kit"
 #!/usr/bin/env python3
 # /// script
 # requires-python = ">=3.11"
@@ -56,6 +53,10 @@ import readchar
 import ssl
 import truststore
 from datetime import datetime, timezone
+
+# Default repository owner and name for Jonas Spec Kit
+DEFAULT_REPO_OWNER = "Jonas-Construction-Software"
+DEFAULT_REPO_NAME = "jonas-spec-kit"
 
 ssl_context = truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 client = httpx.Client(verify=ssl_context)
