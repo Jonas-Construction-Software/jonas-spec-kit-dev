@@ -32,6 +32,13 @@ Execution steps:
    - If JSON parsing fails, abort and instruct user to re-run `/speckit.specify` or verify feature branch environment.
    - For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
 
+   **Multi-Repository Detection**:
+   - Detect if running in a multi-repository workspace by checking for multiple `.git` directories in sibling folders or a workspace configuration file
+   - If multi-repo workspace detected:
+     - Identify which repository contains the current feature branch based on `FEATURE_DIR` path
+     - Load `project-context.md` from the active repository if it exists
+     - Note any cross-repository dependencies or constraints mentioned in the feature spec
+
 2. Load the current spec file. Perform a structured ambiguity & coverage scan using this taxonomy. For each category, mark status: Clear / Partial / Missing. Produce an internal coverage map used for prioritization (do not output raw map unless no questions will be asked).
 
    Functional Scope & Behavior:
@@ -84,6 +91,12 @@ Execution steps:
    - TODO markers / unresolved decisions
    - Ambiguous adjectives ("robust", "intuitive") lacking quantification
 
+   Multi-Repository Context (if applicable):
+   - Cross-repository dependencies and integration points
+   - Shared contracts or APIs between repositories
+   - Repository-specific constraints from `project-context.md` files
+   - Data flow or service boundaries across repositories
+
    For each category with Partial or Missing status, add a candidate question opportunity unless:
    - Clarification would not materially change implementation or validation strategy
    - Information is better deferred to planning phase (note internally)
@@ -98,6 +111,12 @@ Execution steps:
     - Exclude questions already answered, trivial stylistic preferences, or plan-level execution details (unless blocking correctness).
     - Favor clarifications that reduce downstream rework risk or prevent misaligned acceptance tests.
     - If more than 5 categories remain unresolved, select the top 5 by (Impact * Uncertainty) heuristic.
+
+   **Multi-Repository Prioritization** (if workspace detected):
+    - Prioritize questions about cross-repository boundaries and integration contracts
+    - Ask about data ownership and service responsibilities when multiple repositories involved
+    - Clarify deployment dependencies and orchestration needs across repositories
+    - Surface architectural constraints from `project-context.md` that may conflict with feature assumptions
 
 4. Sequential questioning loop (interactive):
     - Present EXACTLY ONE question at a time.
@@ -153,6 +172,12 @@ Execution steps:
     - Preserve formatting: do not reorder unrelated sections; keep heading hierarchy intact.
     - Keep each inserted clarification minimal and testable (avoid narrative drift).
 
+   **Architectural Consistency Check** (multi-repo workspaces):
+    - After integrating each clarification, verify alignment with `project-context.md` constraints
+    - If clarification introduces cross-repository dependencies, note them explicitly
+    - Flag any conflicts between clarified requirements and repository-level architectural decisions
+    - If conflict detected, add a note in the Clarifications section referencing the architectural constraint
+
 6. Validation (performed after EACH write plus final pass):
    - Clarifications session contains exactly one bullet per accepted answer (no duplicates).
    - Total asked (accepted) questions ≤ 5.
@@ -167,6 +192,12 @@ Execution steps:
    - Number of questions asked & answered.
    - Path to updated spec.
    - Sections touched (list names).
+
+   **Architectural Alignment** (if multi-repo workspace):
+   - Confirm whether clarifications align with `project-context.md` constraints
+   - Note any cross-repository dependencies introduced by clarifications
+   - Recommend reviewing relevant `project-context.md` files before proceeding to `/speckit.plan`
+
    - Coverage summary table listing each taxonomy category with Status: Resolved (was Partial/Missing and addressed), Deferred (exceeds question quota or better suited for planning), Clear (already sufficient), Outstanding (still Partial/Missing but low impact).
    - If any Outstanding or Deferred remain, recommend whether to proceed to `/speckit.plan` or run `/speckit.clarify` again later post-plan.
    - Suggested next command.

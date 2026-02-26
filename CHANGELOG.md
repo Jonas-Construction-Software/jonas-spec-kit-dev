@@ -7,6 +7,19 @@ Recent changes to the Specify CLI and templates are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.8] - 2026-02-26
+
+### Enhanced
+
+- **Multi-Repository Workspace Support in Clarification Workflow**: Enhanced `clarify.md` template to intelligently handle multi-repository workspaces
+  - Added multi-repository detection in setup phase to identify workspace structure and locate active repository
+  - Loads `project-context.md` files from repositories to understand architectural constraints
+  - Added new "Multi-Repository Context" taxonomy category for coverage scanning (cross-repo dependencies, shared contracts, service boundaries)
+  - Prioritizes clarification questions about cross-repository integration points and architectural alignment
+  - Validates clarifications against `project-context.md` constraints during integration
+  - Reports architectural alignment and cross-repository dependencies in completion summary
+  - Maintains backward compatibility with single-repository projects
+
 ## [0.1.6] - 2026-02-23
 
 ### Fixed
