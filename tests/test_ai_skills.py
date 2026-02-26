@@ -474,6 +474,7 @@ class TestNewProjectCommandSkip:
 
         def fake_download(project_path, *args, **kwargs):
             self._fake_extract("claude", project_path)
+            return (project_path, {"release": "test"})
 
         with patch("specify_cli.download_and_extract_template", side_effect=fake_download), \
              patch("specify_cli.ensure_executable_scripts"), \
@@ -499,6 +500,7 @@ class TestNewProjectCommandSkip:
 
         def fake_download(project_path, *args, **kwargs):
             self._fake_extract("claude", project_path)
+            return (project_path, {"release": "test"})
 
         with patch("specify_cli.download_and_extract_template", side_effect=fake_download), \
              patch("specify_cli.ensure_executable_scripts"), \
