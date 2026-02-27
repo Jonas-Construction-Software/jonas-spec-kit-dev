@@ -5,6 +5,7 @@ set -e
 JSON_MODE=false
 SHORT_NAME=""
 BRANCH_NUMBER=""
+CUSTOM_PREFIX=""
 ARGS=()
 i=1
 while [ $i -le $# ]; do
@@ -40,18 +41,33 @@ while [ $i -le $# ]; do
             fi
             BRANCH_NUMBER="$next_arg"
             ;;
+        --custom-prefix)
+            if [ $((i + 1)) -gt $# ]; then
+                echo 'Error: --custom-prefix requires a value' >&2
+                exit 1
+            fi
+            i=$((i + 1))
+            next_arg="${!i}"
+            if [[ "$next_arg" == --* ]]; then
+                echo 'Error: --custom-prefix requires a value' >&2
+                exit 1
+            fi
+            CUSTOM_PREFIX="$next_arg"
+            ;;
         --help|-h) 
-            echo "Usage: $0 [--json] [--short-name <name>] [--number N] <feature_description>"
+            echo "Usage: $0 [--json] [--short-name <name>] [--number N] [--custom-prefix <prefix>] <feature_description>"
             echo ""
             echo "Options:"
-            echo "  --json              Output in JSON format"
-            echo "  --short-name <name> Provide a custom short name (2-4 words) for the branch"
-            echo "  --number N          Specify branch number manually (overrides auto-detection)"
-            echo "  --help, -h          Show this help message"
+            echo "  --json                  Output in JSON format"
+            echo "  --short-name <name>     Provide a custom short name (2-4 words) for the branch"
+            echo "  --number N              Specify branch number manually (overrides auto-detection)"
+            echo "  --custom-prefix <prefix> Use Jira dev task key as prefix (e.g., FT-53, DEV-142)"
+            echo "  --help, -h              Show this help message"
             echo ""
             echo "Examples:"
             echo "  $0 'Add user authentication system' --short-name 'user-auth'"
             echo "  $0 'Implement OAuth2 integration for API' --number 5"
+            echo "  $0 'Add user auth' --custom-prefix 'FT-53' --short-name 'user-auth'"
             exit 0
             ;;
         *) 
@@ -235,7 +251,15 @@ else
 fi
 
 # Determine branch number
-if [ -z "$BRANCH_NUMBER" ]; then
+if [ -n "$CUSTOM_PREFIX" ]; then
+    # Using custom prefix (Jira dev task key) - skip number checks
+    # Validate format: Must match [A-Z]+-\d+ pattern
+    if ! echo "$CUSTOM_PREFIX" | grep -qE '^[A-Z]+-[0-9]+$'; then
+        echo "Error: Invalid custom prefix format. Must match pattern [A-Z]+-<number> (e.g., FT-53, DEV-142)" >&2
+        exit 1
+    fi
+    FEATURE_NUM="$CUSTOM_PREFIX"
+elif [ -z "$BRANCH_NUMBER" ]; then
     if [ "$HAS_GIT" = true ]; then
         # Check existing branches on remotes
         BRANCH_NUMBER=$(check_existing_branches "$SPECS_DIR")
@@ -244,10 +268,12 @@ if [ -z "$BRANCH_NUMBER" ]; then
         HIGHEST=$(get_highest_from_specs "$SPECS_DIR")
         BRANCH_NUMBER=$((HIGHEST + 1))
     fi
+    # Force base-10 interpretation to prevent octal conversion (e.g., 010 → 8 in octal, but should be 10 in decimal)
+    FEATURE_NUM=$(printf "%03d" "$((10#$BRANCH_NUMBER))")
+else
+    # Force base-10 interpretation to prevent octal conversion (e.g., 010 → 8 in octal, but should be 10 in decimal)
+    FEATURE_NUM=$(printf "%03d" "$((10#$BRANCH_NUMBER))")
 fi
-
-# Force base-10 interpretation to prevent octal conversion (e.g., 010 → 8 in octal, but should be 10 in decimal)
-FEATURE_NUM=$(printf "%03d" "$((10#$BRANCH_NUMBER))")
 BRANCH_NAME="${FEATURE_NUM}-${BRANCH_SUFFIX}"
 
 # GitHub enforces a 244-byte limit on branch names

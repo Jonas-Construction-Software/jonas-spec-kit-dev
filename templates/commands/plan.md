@@ -28,18 +28,49 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 1. **Setup**: Run `{SCRIPT}` from repo root and parse JSON for FEATURE_SPEC, IMPL_PLAN, SPECS_DIR, BRANCH. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
 
+   **Multi-Repository Workspace Detection**:
+   - Detect if running in a multi-repository workspace by checking for multiple `.git` directories in sibling folders or a workspace configuration file
+   - If multi-repo workspace detected:
+     - Identify which repository contains the current feature branch based on `SPECS_DIR` path
+     - Load `project-context.md` from the active repository if it exists
+     - Scan for `project-context.md` files in sibling repositories to understand the broader system architecture
+     - Note any architectural constraints or dependencies mentioned in these context files
+
 2. **Load context**: Read FEATURE_SPEC and `/memory/constitution.md`. Load IMPL_PLAN template (already copied).
+
+   **Architectural Context Integration**:
+   - If `project-context.md` exists in the active repository, treat it as authoritative for:
+     - Existing tech stack and patterns
+     - Integration surfaces and contracts
+     - Performance and scalability constraints
+     - Security and privacy requirements
+   - If multiple `project-context.md` files exist (multi-repo workspace):
+     - Identify which repositories this feature will interact with based on spec requirements
+     - Load relevant `project-context.md` files to understand integration points
+     - Note any cross-repository constraints that must be preserved
 
 3. **Execute plan workflow**: Follow the structure in IMPL_PLAN template to:
    - Fill Technical Context (mark unknowns as "NEEDS CLARIFICATION")
+     - If `project-context.md` exists, pre-populate known constraints from it
+     - Highlight any spec requirements that conflict with existing architectural constraints
    - Fill Constitution Check section from constitution
    - Evaluate gates (ERROR if violations unjustified)
    - Phase 0: Generate research.md (resolve all NEEDS CLARIFICATION)
+     - Include research tasks for cross-repository integration patterns if applicable
    - Phase 1: Generate data-model.md, contracts/, quickstart.md
+     - Ensure contracts align with existing repository contracts if cross-repo dependencies exist
+     - Reference relevant `project-context.md` sections in contract design rationale
    - Phase 1: Update agent context by running the agent script
    - Re-evaluate Constitution Check post-design
 
 4. **Stop and report**: Command ends after Phase 2 planning. Report branch, IMPL_PLAN path, and generated artifacts.
+
+   **Cross-Repository Impact Summary** (if multi-repo workspace):
+   - List repositories that will be affected by this implementation
+   - Identify shared contracts or APIs that must remain compatible
+   - Note any data models that span multiple repositories
+   - Highlight service boundaries and integration points
+   - Recommend reviewing relevant `project-context.md` files before proceeding to `/speckit.tasks`
 
 ## Phases
 
@@ -49,6 +80,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - For each NEEDS CLARIFICATION → research task
    - For each dependency → best practices task
    - For each integration → patterns task
+   - **Multi-Repo**: For each cross-repository integration → compatibility research task
 
 2. **Generate and dispatch research agents**:
 
@@ -57,12 +89,16 @@ You **MUST** consider the user input before proceeding (if not empty).
      Task: "Research {unknown} for {feature context}"
    For each technology choice:
      Task: "Find best practices for {tech} in {domain}"
+   For each cross-repository integration (if applicable):
+     Task: "Research integration patterns between {source-repo} and {target-repo}"
+     Task: "Validate compatibility with existing {target-repo} contracts"
    ```
 
 3. **Consolidate findings** in `research.md` using format:
    - Decision: [what was chosen]
    - Rationale: [why chosen]
    - Alternatives considered: [what else evaluated]
+   - **Cross-Repository Considerations** (if applicable): [how this aligns with or impacts other repositories]
 
 **Output**: research.md with all NEEDS CLARIFICATION resolved
 
@@ -74,12 +110,17 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Entity name, fields, relationships
    - Validation rules from requirements
    - State transitions if applicable
+   - **Multi-Repo**: Cross-repository entity references and ownership boundaries
 
 2. **Define interface contracts** (if project has external interfaces) → `/contracts/`:
    - Identify what interfaces the project exposes to users or other systems
    - Document the contract format appropriate for the project type
    - Examples: public APIs for libraries, command schemas for CLI tools, endpoints for web services, grammars for parsers, UI contracts for applications
    - Skip if project is purely internal (build scripts, one-off tools, etc.)
+   - **Multi-Repo**: Ensure compatibility with existing contracts in dependent repositories
+     - Reference specific sections from relevant `project-context.md` files
+     - Validate against existing API/contract versions
+     - Document any breaking changes and migration strategy
 
 3. **Agent context update**:
    - Run `{AGENT_SCRIPT}`
@@ -87,10 +128,15 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Update the appropriate agent-specific context file
    - Add only new technology from current plan
    - Preserve manual additions between markers
+   - **Multi-Repo**: Include cross-repository dependencies in context
 
 **Output**: data-model.md, /contracts/*, quickstart.md, agent-specific file
 
 ## Key rules
 
-- Use absolute paths
-- ERROR on gate failures or unresolved clarifications
+- Use absolute paths in all outputs
+- Lock down versions in Phase 1
+- If constitution gate fails, ERROR (force justification in Complexity Tracking)
+- Mark research decisions in research.md
+- **Multi-Repo**: Validate architectural alignment with `project-context.md` files
+- **Multi-Repo**: Document cross-repository dependencies explicitly in plan.md Summary section
