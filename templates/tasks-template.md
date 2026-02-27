@@ -12,11 +12,21 @@ description: "Task list template for feature implementation"
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
-## Format: `[ID] [P?] [Story] Description`
+## Format: `[ID] [P?] [Story?] [Repo] Description`
 
-- **[P]**: Can run in parallel (different files, no dependencies)
-- **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)
-- Include exact file paths in descriptions
+- `[ID]`: T001, T002, T003... (sequential, execution order)
+- `[P]`: Parallel marker (ONLY if task is parallelizable - different files, no blocking dependencies)
+- `[Story]`: User story label (US1, US2, US3...) - ONLY for user story phases
+- `[Repo]`: **REQUIRED** - Repository name (e.g., [my-app], [shared-contracts], [api-service])
+- Description: Clear action with exact file path
+
+**Examples:**
+```markdown
+- [ ] T001 [my-app] Create project structure per implementation plan
+- [ ] T005 [P] [my-app] Implement auth middleware in src/middleware/auth.py
+- [ ] T012 [P] [US1] [my-app] Create User model in src/models/user.py
+- [ ] T015 [US1] [shared-contracts] Update TaskDto in shared-contracts/src/models/task.ts
+```
 
 ## Path Conventions
 
