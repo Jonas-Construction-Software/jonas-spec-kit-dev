@@ -181,7 +181,27 @@ Do not ask the user to repeat the feature description - you already have it from
 
 Given that finalized feature description (from Step 0), do this:
 
-1. **Generate a concise short name** (2-4 words) for the branch:
+1. **Determine branch naming strategy FIRST (before creating anything)**:
+
+   a. **Ask for Jira Development Task Number (Optional but FIRST)**:
+   
+   > **Do you have a Jira development task number to use as the branch prefix (e.g., FT-53, DEV-142)? (Yes/No)**
+   
+   **CRITICAL**: This question MUST be asked BEFORE running any scripts or creating any branches/directories.
+   
+   - **If Yes**:
+     1. Ask: **"Please provide the Jira development task key (e.g., FT-53, DEV-142, PROJ-789):"**
+     2. Validate format: Must match pattern `[A-Z]+-\d+` (e.g., FT-53, DEV-142, PROJ-789)
+     3. If format invalid, show examples and ask again
+     4. Store the validated dev task key as `DEV_TASK_KEY` variable
+     5. **Set branch naming mode**: `USE_DEV_TASK = true`
+   
+   - **If No**:
+     1. **Set branch naming mode**: `USE_DEV_TASK = false`
+     2. Will use auto-numbering (001-, 002-, 003-, etc.)
+
+2. **Generate a concise short name** (2-4 words) for the branch:
+   
    - Analyze the `FEATURE_DESCRIPTION` (set in Step 0) and extract the most meaningful keywords
    - Create a 2-4 word short name that captures the essence of the feature
    - Use action-noun format when possible (e.g., "add-user-auth", "fix-payment-bug")
@@ -193,148 +213,107 @@ Given that finalized feature description (from Step 0), do this:
      - "Create a dashboard for analytics" → "analytics-dashboard"
      - "Fix payment processing timeout bug" → "fix-payment-timeout"
 
-2. **Check for existing branches before creating new one**:
+3. **Determine the branch number and name**:
 
-   a. First, fetch all remote branches to ensure we have the latest information:
+   **CRITICAL**: Branch/directory creation strategy depends on `USE_DEV_TASK` flag from step 1.
 
+   a. **If `USE_DEV_TASK = true`** (user provided Jira dev task key):
+      
+      - Branch name will be: `{DEV_TASK_KEY}-{short-name}` (e.g., `FT-53-user-auth`)
+      - Directory name will be: `{DEV_TASK_KEY}-{short-name}` (e.g., `specs/FT-53-user-auth`)
+      - **Skip auto-number checking** - Jira dev task key replaces numeric prefix entirely
+      - Run script with `--custom-prefix` flag:
+        
+        Bash:
+        ```bash
+        scripts/bash/create-new-feature.sh --json --custom-prefix "{DEV_TASK_KEY}" --short-name "{short-name}" "{brief-summary}"
+        ```
+        
+        PowerShell:
+        ```powershell
+        scripts/powershell/create-new-feature.ps1 -Json -CustomPrefix "{DEV_TASK_KEY}" -ShortName "{short-name}" "{brief-summary}"
+        ```
+      
+      - The script will create: Branch `{DEV_TASK_KEY}-{short-name}` and directory `specs/{DEV_TASK_KEY}-{short-name}`
+      - **No renaming needed** - everything created with correct names from the start
+   
+   b. **If `USE_DEV_TASK = false`** (user did NOT provide Jira dev task key):
+      
+      - Use standard auto-numbering workflow:
+      
+      1. First, fetch all remote branches to ensure we have the latest information:
+         ```bash
+         git fetch --all --prune
+         ```
+      
+      2. Find the highest feature number across all sources for the short-name:
+         - Remote branches: `git ls-remote --heads origin | grep -E 'refs/heads/[0-9]+-<short-name>$'`
+         - Local branches: `git branch | grep -E '^[* ]*[0-9]+-<short-name>$'`
+         - Specs directories: Check for directories matching `specs/[0-9]+-<short-name>`
+      
+      3. Determine the next available number:
+         - Extract all numbers from all three sources
+         - Find the highest number N
+         - Use N+1 for the new branch number
+      
+      4. Run the script with the calculated number and short-name:
+         
+         Bash:
+         ```bash
+         scripts/bash/create-new-feature.sh --json --number {N+1} --short-name "{short-name}" "{brief-summary}"
+         ```
+         
+         PowerShell:
+         ```powershell
+         scripts/powershell/create-new-feature.ps1 -Json -Number {N+1} -ShortName "{short-name}" "{brief-summary}"
+         ```
+         
+         **Generate a brief summary** from `FEATURE_DESCRIPTION`:
+         - Create a concise summary (maximum 35 characters)
+         - Capture the key essence of the feature in a few words
+         - Examples:
+           - "As a user, I want to authenticate using OAuth2..." → "Add OAuth2 authentication"
+           - Long Jira story with multiple paragraphs → "User dashboard with analytics"
+         
+         **IMPORTANT**:
+         - Check all three sources (remote branches, local branches, specs directories)
+         - Only match branches/directories with the exact short-name pattern
+         - If no existing branches/directories found with this short-name, start with number 1
+         - You must only ever run this script once per feature
+         - The JSON output contains BRANCH_NAME and SPEC_FILE paths
+         - For single quotes in args like "I'm Groot", use escape syntax: `'I'\''m Groot'` (or use double quotes: `"I'm Groot"`)
+
+4. **Parse script output and set environment variable**:
+
+   a. Parse the JSON output from the script to extract:
+      - `BRANCH_NAME` - The created branch name
+      - `SPEC_FILE` - Path to the spec file
+      - `FEATURE_NUM` - Feature number or dev task key
+   
+   b. Set the environment variable for the current session:
+      
+      Bash:
       ```bash
-      git fetch --all --prune
+      export SPECIFY_FEATURE="{BRANCH_NAME}"
+      ```
+      
+      PowerShell:
+      ```powershell
+      $env:SPECIFY_FEATURE = "{BRANCH_NAME}"
+      ```
+   
+   c. Confirm to user:
+      ```
+      ✅ Feature environment configured:
+         - Branch: {BRANCH_NAME}
+         - Directory: specs/{BRANCH_NAME}
+         - Spec file: {SPEC_FILE}
+         - SPECIFY_FEATURE environment variable set
       ```
 
-   b. Find the highest feature number across all sources for the short-name:
-      - Remote branches: `git ls-remote --heads origin | grep -E 'refs/heads/[0-9]+-<short-name>$'`
-      - Local branches: `git branch | grep -E '^[* ]*[0-9]+-<short-name>$'`
-      - Specs directories: Check for directories matching `specs/[0-9]+-<short-name>`
+5. Load `templates/spec-template.md` to understand required sections.
 
-   c. Determine the next available number:
-      - Extract all numbers from all three sources
-      - Find the highest number N
-      - Use N+1 for the new branch number
-
-   d. Run the script `{SCRIPT}` with the calculated number and short-name:
-      - **Generate a brief summary** from `FEATURE_DESCRIPTION`:
-        * Create a concise summary (maximum 35 characters)
-        * Capture the key essence of the feature in a few words
-        * Examples:
-          - "As a user, I want to authenticate using OAuth2 so that I can securely access my account with social login" → "Add OAuth2 authentication"
-          - Long Jira story with multiple paragraphs → "User dashboard with analytics"
-      - Pass `--number N+1`, `--short-name "your-short-name"`, and the **brief summary** (not the full FEATURE_DESCRIPTION)
-      - Bash example: `{SCRIPT} --json --number 5 --short-name "user-auth" "Add OAuth2 authentication"`
-      - PowerShell example: `{SCRIPT} -Json -Number 5 -ShortName "user-auth" "Add OAuth2 authentication"`
-      - **IMPORTANT**: Keep the summary under 35 characters to avoid command-line length issues
-
-   **IMPORTANT**:
-   - Check all three sources (remote branches, local branches, specs directories) to find the highest number
-   - Only match branches/directories with the exact short-name pattern
-   - If no existing branches/directories found with this short-name, start with number 1
-   - You must only ever run this script once per feature
-   - The JSON is provided in the terminal as output - always refer to it to get the actual content you're looking for
-   - The JSON output will contain BRANCH_NAME and SPEC_FILE paths
-   - For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot")
-
-   e. **⏸ HOLD POINT - Ask for Jira Development Task Number (Optional)**:
-   
-      Immediately **after** the script completes successfully (branch and directory created), **PAUSE** and ask:
-      
-      > **Do you have a Jira development task number to use as the branch prefix (e.g., FT-53, DEV-142)? (Yes/No)**
-      
-      - **If Yes**:
-        1. Ask: **"Please provide the Jira development task key (e.g., FT-53):"**
-        2. Validate format: Must match pattern `[A-Z]+-\d+` (e.g., FT-53, DEV-142, PROJ-789)
-        3. If format invalid, ask again with example
-        4. Parse script JSON output to get current branch and directory names
-        5. Extract the short-name portion from the current branch (everything after the number prefix)
-        6. **Rename the Git branch**:
-           
-           For Bash:
-           ```bash
-           OLD_BRANCH="{parsed BRANCH_NAME from JSON}"
-           NEW_BRANCH="{DEV_TASK_KEY}-{short-name}"  # e.g., FT-53-user-auth
-           
-           # Rename local branch
-           git branch -m "$OLD_BRANCH" "$NEW_BRANCH"
-           
-           # If remote tracking exists, update it
-           if git rev-parse --abbrev-ref "$NEW_BRANCH@{upstream}" >/dev/null 2>&1; then
-               git push origin -u "$NEW_BRANCH"
-               git push origin --delete "$OLD_BRANCH" 2>/dev/null || true
-           fi
-           ```
-           
-           For PowerShell:
-           ```powershell
-           $oldBranch = "{parsed BRANCH_NAME from JSON}"
-           $newBranch = "{DEV_TASK_KEY}-{short-name}"  # e.g., FT-53-user-auth
-           
-           # Rename local branch
-           git branch -m $oldBranch $newBranch
-           
-           # If remote tracking exists, update it
-           try {
-               git rev-parse --abbrev-ref "$newBranch@{upstream}" 2>$null | Out-Null
-               if ($LASTEXITCODE -eq 0) {
-                   git push origin -u $newBranch
-                   git push origin --delete $oldBranch 2>$null | Out-Null
-               }
-           } catch { }
-           ```
-        
-        7. **Rename the feature directory**:
-           
-           For Bash:
-           ```bash
-           OLD_DIR="{specs/XXX-short-name from JSON}"
-           NEW_DIR="specs/{DEV_TASK_KEY}-{short-name}"  # e.g., specs/FT-53-user-auth
-           
-           # Rename directory using git mv (preserves history)
-           git mv "$OLD_DIR" "$NEW_DIR"
-           
-           # Update path variables for subsequent steps
-           FEATURE_DIR="$NEW_DIR"
-           SPEC_FILE="$NEW_DIR/spec.md"
-           ```
-           
-           For PowerShell:
-           ```powershell
-           $oldDir = "{specs/XXX-short-name from JSON}"
-           $newDir = "specs/{DEV_TASK_KEY}-{short-name}"  # e.g., specs/FT-53-user-auth
-           
-           # Rename directory using git mv (preserves history)
-           git mv $oldDir $newDir
-           
-           # Update path variables for subsequent steps
-           $featureDir = $newDir
-           $specFile = "$newDir/spec.md"
-           ```
-        
-        8. Confirm to user:
-           ```
-           ✅ Branch and directory renamed:
-              Old: {OLD_BRANCH} → New: {NEW_BRANCH}
-              Directory: {NEW_DIR}
-           
-           Updated paths:
-           - BRANCH_NAME: {NEW_BRANCH}
-           - FEATURE_DIR: {NEW_DIR}
-           - SPEC_FILE: {NEW_DIR}/spec.md
-           ```
-        
-        9. **Update environment variable**:
-           ```bash
-           export SPECIFY_FEATURE="{NEW_BRANCH}"
-           ```
-           or
-           ```powershell
-           $env:SPECIFY_FEATURE = "{NEW_BRANCH}"
-           ```
-        
-        10. Continue to step 3 using the updated paths
-      
-      - **If No**: Continue with auto-numbered branch (001-, 002-, etc.) and proceed to step 3
-
-3. Load `templates/spec-template.md` to understand required sections.
-
-4. Follow this execution flow:
+6. Follow this execution flow:
 
     1. Parse the `FEATURE_DESCRIPTION` (set in Step 0)
        If empty or missing: ERROR "No feature description provided from Step 0"
@@ -360,9 +339,9 @@ Given that finalized feature description (from Step 0), do this:
     7. Identify Key Entities (if data involved)
     8. Return: SUCCESS (spec ready for planning)
 
-5. Write the specification to SPEC_FILE using the template structure, replacing placeholders with concrete details derived from the `FEATURE_DESCRIPTION` (set in Step 0) while preserving section order and headings.
+7. Write the specification to SPEC_FILE using the template structure, replacing placeholders with concrete details derived from the `FEATURE_DESCRIPTION` (set in Step 0) while preserving section order and headings.
 
-6. **Specification Quality Validation**: After writing the initial spec, validate it against quality criteria:
+8. **Specification Quality Validation**: After writing the initial spec, validate it against quality criteria:
 
    a. **Create Spec Quality Checklist**: Generate a checklist file at `FEATURE_DIR/checklists/requirements.md` using the checklist template structure with these validation items:
 
@@ -454,7 +433,7 @@ Given that finalized feature description (from Step 0), do this:
 
    d. **Update Checklist**: After each validation iteration, update the checklist file with current pass/fail status
 
-7. Report completion with branch name, spec file path, checklist results, and readiness for the next phase (`/speckit.clarify` or `/speckit.plan`).
+9. Report completion with branch name, spec file path, checklist results, and readiness for the next phase (`/speckit.clarify` or `/speckit.plan`).
 
 **NOTE:** The script creates and checks out the new branch and initializes the spec file before writing.
 

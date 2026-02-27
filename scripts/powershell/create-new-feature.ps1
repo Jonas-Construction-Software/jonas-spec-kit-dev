@@ -5,6 +5,7 @@ param(
     [switch]$Json,
     [string]$ShortName,
     [int]$Number = 0,
+    [string]$CustomPrefix,
     [switch]$Help,
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$FeatureDescription
@@ -13,17 +14,19 @@ $ErrorActionPreference = 'Stop'
 
 # Show help if requested
 if ($Help) {
-    Write-Host "Usage: ./create-new-feature.ps1 [-Json] [-ShortName <name>] [-Number N] <feature description>"
+    Write-Host "Usage: ./create-new-feature.ps1 [-Json] [-ShortName <name>] [-Number N] [-CustomPrefix <prefix>] <feature description>"
     Write-Host ""
     Write-Host "Options:"
     Write-Host "  -Json               Output in JSON format"
     Write-Host "  -ShortName <name>   Provide a custom short name (2-4 words) for the branch"
     Write-Host "  -Number N           Specify branch number manually (overrides auto-detection)"
+    Write-Host "  -CustomPrefix <prefix> Use Jira dev task key as prefix (e.g., FT-53, DEV-142)"
     Write-Host "  -Help               Show this help message"
     Write-Host ""
     Write-Host "Examples:"
     Write-Host "  ./create-new-feature.ps1 'Add user authentication system' -ShortName 'user-auth'"
     Write-Host "  ./create-new-feature.ps1 'Implement OAuth2 integration for API'"
+    Write-Host "  ./create-new-feature.ps1 'Add user auth' -CustomPrefix 'FT-53' -ShortName 'user-auth'"
     exit 0
 }
 
@@ -207,7 +210,15 @@ if ($ShortName) {
 }
 
 # Determine branch number
-if ($Number -eq 0) {
+if ($CustomPrefix) {
+    # Using custom prefix (Jira dev task key) - skip number checks
+    # Validate format: Must match [A-Z]+-\d+ pattern
+    if ($CustomPrefix -notmatch '^[A-Z]+-[0-9]+$') {
+        Write-Error "Invalid custom prefix format. Must match pattern [A-Z]+-<number> (e.g., FT-53, DEV-142)"
+        exit 1
+    }
+    $featureNum = $CustomPrefix
+} elseif ($Number -eq 0) {
     if ($hasGit) {
         # Check existing branches on remotes
         $Number = Get-NextBranchNumber -SpecsDir $specsDir
@@ -215,9 +226,10 @@ if ($Number -eq 0) {
         # Fall back to local directory check
         $Number = (Get-HighestNumberFromSpecs -SpecsDir $specsDir) + 1
     }
+    $featureNum = ('{0:000}' -f $Number)
+} else {
+    $featureNum = ('{0:000}' -f $Number)
 }
-
-$featureNum = ('{0:000}' -f $Number)
 $branchName = "$featureNum-$branchSuffix"
 
 # GitHub enforces a 244-byte limit on branch names

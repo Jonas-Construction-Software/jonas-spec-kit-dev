@@ -7,6 +7,59 @@ Recent changes to the Specify CLI and templates are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-02-27
+
+### Added
+
+- **Multi-Repository Workspace Support in Plan and Tasks Workflows**: Extended multi-repo capabilities from clarify workflow to plan and tasks workflows
+  - **Plan Workflow (`plan.md`)**:
+    - Added multi-repository detection to identify workspace structure and active repository location
+    - Loads `project-context.md` files from multiple repositories to understand system-wide architecture
+    - Pre-populates technical context with known constraints from architectural documentation
+    - Validates plan against cross-repository architectural constraints
+    - Generates cross-repository impact summary listing affected repositories and integration points
+    - Documents shared contracts, data models, and service boundaries that span repositories
+    - Includes research tasks for cross-repository integration patterns
+    - Ensures contracts align with existing repository contracts when cross-repo dependencies exist
+  - **Tasks Workflow (`tasks.md`)**:
+    - Detects multi-repository workspaces and identifies active repository from `FEATURE_DIR` path
+    - Loads architectural context from `project-context.md` files in relevant repositories
+    - Maps cross-repository dependencies from plan to task organization
+    - Validates contract changes don't break existing integrations in other repositories
+    - Adds `[Repo]` label to task format for multi-repo tasks (e.g., `- [ ] [TaskID] [P1] [S1] [repo-name] Description`)
+    - Includes cross-repository dependencies in task dependency graph
+    - Generates contract validation and compatibility check tasks for shared APIs
+    - Documents cross-repository task summary with coordination requirements
+  - Maintains full backward compatibility with single-repository projects
+
+- **Jira Development Task Integration in Specify Workflow**: Enhanced feature branch creation with optional Jira task number support
+  - **Specify Workflow (`specify.md`)**:
+    - Added upfront prompt for Jira development task number before branch creation (e.g., FT-53, DEV-142, PROJ-789)
+    - Validates Jira key format using pattern `[A-Z]+-\d+`
+    - Supports two branch naming modes:
+      1. **Jira mode**: Uses dev task key as prefix (e.g., `FT-53-user-auth`)
+      2. **Auto-numbering mode**: Uses sequential numbers (e.g., `001-user-auth`)
+    - Ensures consistent branch and directory naming based on selected mode
+    - Moved Jira prompt to beginning of workflow for better UX (before any resource creation)
+  - **Feature Creation Scripts**:
+    - Added `--custom-prefix` option to `create-new-feature.sh` (Bash)
+    - Added `-CustomPrefix` parameter to `create-new-feature.ps1` (PowerShell)
+    - Validates custom prefix format and provides clear error messages
+    - Updated help documentation and usage examples for both scripts
+  - **Benefits**:
+    - Provides clear feature branch traceability back to Jira development tasks
+    - Enables teams to quickly identify which Jira task a feature branch implements
+    - Supports existing auto-numbering workflow for teams not using Jira
+    - Improves project management integration and developer workflow
+
+### Changed
+
+- **Improved Specify Workflow Branch Naming Strategy**: Restructured branch creation logic for better clarity and maintainability
+  - Separated branch naming strategy determination into explicit first step
+  - Made Jira integration opt-in with clear Yes/No prompt at beginning
+  - Consolidated branch numbering logic to avoid duplication
+  - Enhanced documentation of branch creation process with clearer examples
+
 ## [0.1.8] - 2026-02-26
 
 ### Enhanced
