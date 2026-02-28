@@ -5,8 +5,8 @@ set -euo pipefail
 # Calculate the next version based on the latest git tag and output GitHub Actions variables
 # Usage: get-next-version.sh
 
-# Get the latest tag, or use v0.0.0 if no tags exist
-LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+# Get the latest tag by version number (not commit reachability), or use v0.0.0 if no tags exist
+LATEST_TAG=$(git tag --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1 || echo "v0.0.0")
 if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
   echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
 fi
