@@ -7,6 +7,16 @@ Recent changes to the Specify CLI and templates are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.13] - 2026-02-27
+
+### Fixed
+
+- **Implement Command Template**: Replaced placeholder with explicit script paths
+  - Replaced `{BRANCH_SETUP_SCRIPT}` placeholder with explicit Bash and PowerShell script paths
+  - Added separate code blocks for `scripts/bash/setup-repo-branches.sh` and `scripts/powershell/setup-repo-branches.ps1`
+  - Ensures AI agents can correctly execute multi-repository branch setup regardless of platform
+  - Follows established pattern used in other command templates for cross-platform compatibility
+
 ## [0.1.12] - 2026-02-27
 
 ### Added

@@ -3,9 +3,6 @@ description: Execute the implementation plan by processing and executing all tas
 scripts:
   sh: scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks
   ps: scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks
-branch_setup_scripts:
-  sh: scripts/bash/setup-repo-branches.sh
-  ps: scripts/powershell/setup-repo-branches.ps1
 ---
 
 ## User Input
@@ -34,8 +31,14 @@ You **MUST** consider the user input before proceeding (if not empty).
    
    Run the branch setup script from repo root:
    
-   ```sh
-   {BRANCH_SETUP_SCRIPT}
+   **Bash:**
+   ```bash
+   .specify/scripts/bash/setup-repo-branches.sh
+   ```
+   
+   **PowerShell:**
+   ```powershell
+   .specify/scripts/powershell/setup-repo-branches.ps1
    ```
    
    This script will:
