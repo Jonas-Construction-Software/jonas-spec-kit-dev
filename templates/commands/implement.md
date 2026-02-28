@@ -193,16 +193,20 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Check that implemented features match the original specification
    - Validate that tests pass and coverage meets requirements
    - Confirm the implementation follows the technical plan
+   - **DO NOT commit changes** - leave all changes uncommitted (staged or unstaged) for user review
    - Report final status with summary of completed work in the chat (do not create additional files)
 
 10. **Multi-Repository Completion Validation** (if multi-repo workspace):
     - Verify all affected repositories have matching feature branches
     - Confirm all cross-repository tasks completed successfully
     - Validate contract compatibility across repository boundaries
+    - **DO NOT commit changes in any repository** - leave all changes uncommitted for user review
     - Report which repositories have uncommitted changes
     - Recommend coordination steps for pull request creation across repositories:
       - Create PRs in dependency order (shared contracts → consumers)
       - Link related PRs across repositories
       - Coordinate merge timing to avoid breaking changes
+
+**IMPORTANT**: Do NOT commit any changes. All changes must remain uncommitted (staged or unstaged) for user review before committing. This applies to both single-repository and multi-repository implementations.
 
 Note: This command assumes a complete task breakdown exists in tasks.md. If tasks are incomplete or missing, suggest running `/speckit.tasks` first to regenerate the task list.
