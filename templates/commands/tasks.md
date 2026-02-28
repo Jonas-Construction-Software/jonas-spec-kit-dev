@@ -111,7 +111,7 @@ The tasks.md should be immediately executable - each task must be specific enoug
 Every task MUST strictly follow this format:
 
 ```text
-- [ ] [TaskID] [P?] [Story?] [Repo?] Description with file path
+- [ ] [TaskID] [P?] [Story?] [Repo] Description with file path
 ```
 
 **Format Components**:
@@ -125,21 +125,23 @@ Every task MUST strictly follow this format:
    - Foundational phase: NO story label  
    - User Story phases: MUST have story label
    - Polish phase: NO story label
-5. **[Repo] label**: REQUIRED for multi-repo tasks only
+5. **[Repo] label**: **REQUIRED for ALL tasks**
    - Format: [repo-name] where repo-name is the repository folder name
-   - Include ONLY when task affects a different repository than the current one
-   - Helps identify cross-repository coordination requirements
+   - For single-repo projects: Use the current repository name
+   - For multi-repo projects: Use the target repository name
+   - Enables consistent parsing and cross-repository coordination
 6. **Description**: Clear action with exact file path
 
 **Examples**:
 
-- ✅ CORRECT (single-repo): `- [ ] T001 Create project structure per implementation plan`
-- ✅ CORRECT (single-repo): `- [ ] T005 [P] Implement authentication middleware in src/middleware/auth.py`
-- ✅ CORRECT (single-repo): `- [ ] T012 [P] [US1] Create User model in src/models/user.py`
-- ✅ CORRECT (single-repo): `- [ ] T014 [US1] Implement UserService in src/services/user_service.py`
+- ✅ CORRECT (single-repo): `- [ ] T001 [my-app] Create project structure per implementation plan`
+- ✅ CORRECT (single-repo): `- [ ] T005 [P] [my-app] Implement authentication middleware in src/middleware/auth.py`
+- ✅ CORRECT (single-repo): `- [ ] T012 [P] [US1] [my-app] Create User model in src/models/user.py`
+- ✅ CORRECT (single-repo): `- [ ] T014 [US1] [my-app] Implement UserService in src/services/user_service.py`
 - ✅ CORRECT (multi-repo): `- [ ] T015 [US1] [shared-contracts] Update TaskDto in shared-contracts/src/models/task.ts`
 - ✅ CORRECT (multi-repo): `- [ ] T020 [P] [US2] [api-gateway] Add task endpoint proxy in api-gateway/src/routes/tasks.ts`
-- ❌ WRONG: `- [ ] Create User model` (missing ID and Story label)
+- ❌ WRONG: `- [ ] T001 Create project structure` (missing Repo label)
+- ❌ WRONG: `- [ ] T012 [US1] Create User model` (missing Repo label)
 - ❌ WRONG: `T001 [US1] Create model` (missing checkbox)
 - ❌ WRONG: `- [ ] [US1] Create User model` (missing Task ID)
 - ❌ WRONG: `- [ ] T001 [US1] Create model` (missing file path)
@@ -208,8 +210,8 @@ When tasks span multiple repositories, apply these patterns:
 ```markdown
 - [ ] T015 [US1] [shared-contracts] Update interface in shared-contracts/src/api/task.ts
 - [ ] T016 [US1] [shared-contracts] Version bump in shared-contracts/package.json
-- [ ] T017 [US1] Consume updated contract in src/services/task-client.ts
-- [ ] T018 [US1] Validate contract compatibility in src/services/task-client.ts
+- [ ] T017 [US1] [api-service] Consume updated contract in src/services/task-client.ts
+- [ ] T018 [US1] [api-service] Validate contract compatibility in src/services/task-client.ts
 ```
 
 ### Pattern 2: Parallel Repository Changes

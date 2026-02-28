@@ -7,6 +7,40 @@ Recent changes to the Specify CLI and templates are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.12] - 2026-02-27
+
+### Added
+
+- **Repository Branch Setup Scripts**: Added automated scripts for creating feature branches across multi-repository workspaces
+  - `scripts/bash/setup-repo-branches.sh`: Bash implementation for Unix-like systems
+  - `scripts/powershell/setup-repo-branches.ps1`: PowerShell implementation for Windows
+  - Automatically detects multi-repo workspaces and creates matching feature branches
+  - Parses `tasks.md` for `[repo-name]` labels to identify affected repositories
+  - Handles both single-repo and multi-repo scenarios seamlessly
+
+### Changed
+
+- **Analyze Command Template**: Enhanced multi-repository awareness
+  - Added comprehensive handoff templates for post-analysis workflow transitions
+  - Improved documentation of handoff patterns and checklist generation
+  - Enhanced cross-repository constraint validation
+
+- **Implement Command Template**: Added explicit no-commit policy
+  - Added **DO NOT commit changes** instruction in completion validation (step 9)
+  - Added **DO NOT commit changes in any repository** for multi-repo scenarios (step 10)
+  - Added prominent final reminder that all changes must remain uncommitted for user review
+  - Prevents automatic commits after implementation, requiring explicit user approval
+
+- **Tasks Command Template**: Improved task format validation
+  - Enhanced `[Repo]` label requirement documentation
+  - Clarified checklist format with better examples
+  - Added explicit repository label examples for single-repo and multi-repo scenarios
+
+- **Tasks Template**: Updated task structure documentation
+  - Refined phase organization and task ordering guidelines
+  - Enhanced parallel task execution rules
+  - Improved repository label format documentation
+
 ## [0.1.10] - 2026-02-27
 
 ### Added
