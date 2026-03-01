@@ -25,6 +25,12 @@ single Markdown file named:
 <repo-root>/project-context.md
 ```
 
+**Workspace Architecture**:
+- **Multi-repo**: `*-document` repositories are excluded because they hold planning artifacts
+  (.specify/ directory) but no source code. This command generates `project-context.md` in
+  implementation repositories that contain actual code.
+- **Single-repo**: Generates `project-context.md` at repository root alongside source code.
+
 Do **not** create additional files.
 Do **not** modify source code.
 
@@ -41,11 +47,12 @@ If **no source code** is detected, **skip the repository**.
 
 ## 1) Workspace Traversal
 1. Detect all repositories in the workspace.
-2. Exclude repositories whose names match the pattern `*-document`.
+2. Exclude repositories whose names match the pattern `*-document` (these contain planning artifacts, not source code).
 3. For each remaining repository, check for **source code presence**.
 4. If source code exists, apply the reverse‑engineering process.
 5. If **no source code is detected**, skip the repository and note this in
-   the final summary under **“Skipped (No source detected)”**.
+   the final summary under **"Skipped (No source detected)"**.
+   - **Single-repo scenario**: If only one repository exists and it contains source, treat as single-repo and generate `project-context.md` at root.
 6. If `<repo-root>/project-context.md` already exists, ask the user for
   confirmation before overwriting:
   - Prompt: `project-context.md already exists in <repo>. Overwrite? (Y/N)`

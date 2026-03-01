@@ -1,7 +1,8 @@
 ---
 description: >-
   Create or update the feature specification. Optionally import from Jira user story 
-  or provide a natural language feature description. Supports Jira dev-task-based branch naming.
+  or provide a natural language feature description. Supports Jira dev-task-based branch naming 
+  with auto-discovery of development tasks from imported user stories.
 handoffs: 
   - label: Build Technical Plan
     agent: speckit.plan
@@ -13,6 +14,30 @@ handoffs:
 scripts:
   sh: scripts/bash/create-new-feature.sh --json "{ARGS}"
   ps: scripts/powershell/create-new-feature.ps1 -Json "{ARGS}"
+---
+
+## Workspace Architecture Context
+
+This command operates within the Spec Kit workspace architecture:
+
+**Multi-Repository Workspace**:
+- **`*-document` repository**: Holds ALL planning artifacts:
+  - `.specs/{feature-name}/` - Feature specifications, plans, tasks, checklists
+  - `.specify/memory/` - Constitution and project memory
+  - `.specify/templates/` - Command and artifact templates
+  - Feature branches in *-document repo track planning work
+- **Implementation repositories**: Contain source code and `project-context.md`
+  - Implementation branches are created later by `/speckit.implement` command
+  - Branch names match the *-document feature branch name
+
+**Single-Repository Workspace**:
+- All artifacts and code live together in one repository
+- `.specs/{feature-name}/` at repository root
+- `.specify/` directory at repository root
+- Single feature branch contains both planning and implementation changes
+
+**Artifact Storage**: All specs, plans, tasks, and checklists are ALWAYS created in the `*-document` repository (multi-repo) or at repository root (single-repo), never in implementation repositories.
+
 ---
 
 ## Pre-processing: Optional Jira User Story Import (Step 0)
@@ -145,6 +170,14 @@ Before treating the user's message after `/speckit.specify` as the feature descr
    
    Based on the choice, set `FEATURE_DESCRIPTION` to the appropriate content for use in subsequent steps.
 
+7. **Store Jira context for branch naming**:
+   
+   Set the following variables for use in branch naming:
+   - `JIRA_STORY_IMPORTED = true`
+   - `JIRA_STORY_KEY` = the user story key (e.g., PROJ-123)
+   - `JIRA_CLOUD_ID` = the cloud ID from step 2
+   - `JIRA_SUBTASKS` = the subtasks field from the retrieved issue (if any)
+
 ### If the user answers **No**
 
 1. Ask the user to provide the feature description:
@@ -154,6 +187,10 @@ Before treating the user's message after `/speckit.specify` as the feature descr
 2. Wait for user's response
 
 3. Set `FEATURE_DESCRIPTION` to the user's provided description
+
+4. **Set Jira context flag**:
+   
+   Set `JIRA_STORY_IMPORTED = false`
 
 ---
 
@@ -183,7 +220,86 @@ Given that finalized feature description (from Step 0), do this:
 
 1. **Determine branch naming strategy FIRST (before creating anything)**:
 
-   a. **Ask for Jira Development Task Number (Optional but FIRST)**:
+   a. **Retrieve Development Tasks from Jira (if applicable)**:
+   
+   **CRITICAL**: This step ONLY executes if `JIRA_STORY_IMPORTED = true` (user imported from Jira in Step 0).
+   
+   If `JIRA_STORY_IMPORTED = true`:
+   
+   1. **Check for subtasks in the imported story**:
+      
+      Examine the `JIRA_SUBTASKS` field from Step 0. Subtasks in Jira are often used as development tasks.
+      
+      Filter subtasks to identify those that appear to be development tasks:
+      - Look for issue types: "Development Task", "Dev Task", "Task", "Sub-task", "Technical Task"
+      - Look for keywords in summary: "dev", "development", "implement", "code", "technical"
+      - Include all subtasks if unable to determine which are development-specific
+   
+   2. **If development tasks are found**:
+      
+      Present them to the user with this format:
+      
+      ```markdown
+      ## Available Development Tasks from {JIRA_STORY_KEY}
+      
+      I found the following development tasks associated with this user story:
+      
+      | Option | Task Key | Summary | Status |
+      |--------|----------|---------|--------|
+      | 1      | {TASK_KEY_1} | {SUMMARY_1} | {STATUS_1} |
+      | 2      | {TASK_KEY_2} | {SUMMARY_2} | {STATUS_2} |
+      | ...    | ...      | ...     | ...    |
+      | M      | Manual entry | Enter a different Jira development task key | - |
+      | N      | No dev task | Use auto-numbering instead (001-, 002-, etc.) | - |
+      
+      **Which option would you like to use for the branch prefix?** (Enter 1, 2, ..., M, or N):
+      ```
+      
+      **CRITICAL - Table Formatting**: Ensure markdown tables are properly formatted:
+      - Use consistent spacing with pipes aligned
+      - Each cell should have spaces around content: `| Content |` not `|Content|`
+      - Header separator must have at least 3 dashes: `|--------|`
+   
+   3. **Handle user's selection**:
+      
+      - **If user selects a numbered option (1, 2, etc.)**:
+        - Extract the task key from the selected option
+        - Validate format: Must match pattern `[A-Z]+-\d+`
+        - Store as `DEV_TASK_KEY` variable
+        - **Set branch naming mode**: `USE_DEV_TASK = true`
+        - **Skip step 1.b** and proceed directly to step 2
+      
+      - **If user selects "M" (Manual entry)**:
+        - Proceed to step 1.b to ask for manual input
+      
+      - **If user selects "N" (No dev task)**:
+        - **Set branch naming mode**: `USE_DEV_TASK = false`
+        - **Skip step 1.b** and proceed directly to step 2
+   
+   4. **If no development tasks are found OR MCP server fails**:
+      
+      - Log a note: "No development tasks found for {JIRA_STORY_KEY}, asking for manual input"
+      - Proceed to step 1.b
+   
+   5. **Error handling**:
+      
+      If any error occurs while retrieving or processing subtasks:
+      - Log the error details
+      - Show warning to user:
+        ```
+        ⚠️ Warning: Could not retrieve development tasks from Jira.
+        
+        Error: {ERROR_MESSAGE}
+        
+        Continuing with manual development task input...
+        ```
+      - Proceed to step 1.b
+   
+   If `JIRA_STORY_IMPORTED = false`:
+   
+   - Skip this entire step and proceed directly to step 1.b
+
+   b. **Ask for Jira Development Task Number (Manual Input)**:
    
    > **Do you have a Jira development task number to use as the branch prefix (e.g., FT-53, DEV-142)? (Yes/No)**
    

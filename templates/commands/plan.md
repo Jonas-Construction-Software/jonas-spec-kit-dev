@@ -16,6 +16,25 @@ agent_scripts:
   ps: scripts/powershell/update-agent-context.ps1 -AgentType __AGENT__
 ---
 
+## Workspace Architecture Context
+
+This command operates within the Spec Kit workspace architecture:
+
+**Multi-Repository Workspace**:
+- **Planning artifacts** (specs, plans, tasks) live in `.specs/{feature-name}/` within the `*-document` repository
+- **Implementation repositories** contain source code and `project-context.md` files with architectural guidance
+- This command generates plan.md in the `*-document` repository
+- Cross-repository dependencies are documented in the plan for later coordination
+
+**Single-Repository Workspace**:
+- All artifacts and code live together in one repository
+- Plan artifacts created at `.specs/{feature-name}/`
+- `project-context.md` (if present) at repository root
+
+**Artifact Location**: All plan artifacts (plan.md, research.md, data-model.md, contracts/, quickstart.md) are created in `FEATURE_DIR` which is in the `*-document` repository (multi-repo) or at repository root (single-repo).
+
+---
+
 ## User Input
 
 ```text
@@ -31,10 +50,13 @@ You **MUST** consider the user input before proceeding (if not empty).
    **Multi-Repository Workspace Detection**:
    - Detect if running in a multi-repository workspace by checking for multiple `.git` directories in sibling folders or a workspace configuration file
    - If multi-repo workspace detected:
-     - Identify which repository contains the current feature branch based on `SPECS_DIR` path
-     - Load `project-context.md` from the active repository if it exists
+     - Confirm that `SPECS_DIR` is in the `*-document` repository (planning artifacts repository)
+     - Load `project-context.md` from implementation repositories if they exist
      - Scan for `project-context.md` files in sibling repositories to understand the broader system architecture
      - Note any architectural constraints or dependencies mentioned in these context files
+   - If single-repo workspace:
+     - All artifacts and code are in the same repository
+     - Load `project-context.md` from repository root if it exists
 
 2. **Load context**: Read FEATURE_SPEC and `/memory/constitution.md`. Load IMPL_PLAN template (already copied).
 

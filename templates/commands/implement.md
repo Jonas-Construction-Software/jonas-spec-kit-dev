@@ -5,6 +5,28 @@ scripts:
   ps: scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks
 ---
 
+## Workspace Architecture Context
+
+This command operates within the Spec Kit workspace architecture:
+
+**Multi-Repository Workspace**:
+- Reads tasks from `.specs/{feature-name}/tasks.md` in the `*-document` repository
+- Creates matching feature branches in implementation repositories based on `[repo-name]` labels
+- Executes tasks in their target repositories (switches context based on `[repo-name]`)
+- Leaves all changes uncommitted across all affected repositories for user review
+
+**Single-Repository Workspace**:
+- Reads tasks from `.specs/{feature-name}/tasks.md` at repository root
+- All tasks execute in the current repository (all `[repo-name]` labels are identical)
+- No branch creation needed - work continues on current feature branch
+- Leaves all changes uncommitted for user review
+
+**Branch Strategy**:
+- Multi-repo: Feature branch exists in `*-document` repo; implementation branches created in target repos by this command
+- Single-repo: Single feature branch contains both planning artifacts and implementation code
+
+---
+
 ## User Input
 
 ```text
@@ -20,7 +42,11 @@ You **MUST** consider the user input before proceeding (if not empty).
 1. **Parse Repository Labels**: Scan `tasks.md` for `[repo-name]` labels (mandatory for ALL tasks) to identify all repositories requiring changes
 2. **Determine Implementation Scope**:
    - **Single-repo**: All `[repo-name]` labels reference the same repository
+     - Work continues on the current branch in the active repository
+     - No cross-repository coordination needed
    - **Multi-repo**: Multiple distinct `[repo-name]` labels found across tasks
+     - Create matching feature branches in all affected repositories
+     - Coordinate work across repository boundaries
 3. **Branch Strategy**:
    - **Single-repo**: Work continues on the current branch in the active repository
    - **Multi-repo**: Create matching feature branches in all affected repositories using the same branch name as the `*-document` repository

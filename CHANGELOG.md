@@ -7,6 +7,38 @@ Recent changes to the Specify CLI and templates are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.14] - 2026-02-28
+
+### Added
+
+- **Jira Development Task Auto-Discovery in Specify Workflow**: Enhanced feature branch creation with automatic retrieval of development tasks from imported user stories
+  - **Specify Workflow (`specify.md`)**:
+    - Added automatic retrieval of subtasks from imported Jira user stories
+    - Filters subtasks to identify development tasks by type and keywords
+    - Presents available development tasks in formatted table with options to:
+      - Select an existing development task (1, 2, 3, etc.)
+      - Enter a different task manually (M)
+      - Skip and use auto-numbering (N)
+    - Auto-discovery only executes when user imports from Jira in Step 0
+    - Falls back to manual input if no development tasks found or MCP server fails
+    - Stores Jira context variables (`JIRA_STORY_IMPORTED`, `JIRA_STORY_KEY`, `JIRA_CLOUD_ID`, `JIRA_SUBTASKS`) for later use
+  - **Benefits**:
+    - Eliminates manual task key entry when development tasks already exist in Jira
+    - Provides better visibility into available development tasks associated with user story
+    - Streamlines workflow for teams using Jira for task management
+    - Maintains flexibility with manual entry and auto-numbering fallback options
+
+### Changed
+
+- **Customized for Jonas Construction Software**: Rebranded and customized jonas-spec-kit fork
+  - Updated all repository URLs from `github/spec-kit` to `Jonas-Construction-Software/jonas-spec-kit`
+  - Updated README description to reflect customization for Jonas Construction Software's workflow
+  - Updated installation and upgrade commands with new repository location
+  - Reordered core commands table to prioritize `/speckit.context` as first command
+  - Enhanced acknowledgements section to credit original GitHub Spec Kit project
+  - Updated GitHub Pages documentation URL
+  - Updated support and issue tracking URL
+
 ## [0.1.13] - 2026-02-27
 
 ### Fixed
