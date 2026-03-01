@@ -221,8 +221,12 @@ Each phase must:
 
 **Post-Write Phase:**
 1. Verify complete file contains all 21 sections (0-20)
-2. If verification passes: delete backup file
-3. If verification fails: restore from backup and report error
+2. If verification passes: 
+   - **Delete the backup file** `project-context.md.backup.YYYYMMDD_HHMMSS` (use file deletion operation)
+   - Confirm deletion succeeded
+3. If verification fails: 
+   - Restore from backup by copying `project-context.md.backup.YYYYMMDD_HHMMSS` to `project-context.md`
+   - Report error with details
 
 ### 6.3 Encoding & Format
 - Use UTF‑8 encoding

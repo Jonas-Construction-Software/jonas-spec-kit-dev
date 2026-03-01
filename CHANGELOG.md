@@ -7,6 +7,39 @@ Recent changes to the Specify CLI and templates are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.15] - 2026-03-01
+
+### Enhanced
+
+- **Jira Development Task Discovery Enhancement**: Expanded development task retrieval to check both subtasks and linked issues when importing from Jira user stories
+  - **Specify Workflow (`specify.md`)**:
+    - Now retrieves development tasks from both `subtasks` and `issuelinks` fields when fetching Jira user stories
+    - Added processing for linked issues with relevant link types: "implements", "is implemented by", "relates to", "depends on", "rolls up into", "breaks down into"
+    - Filters linked issues by issue type (Development Task, Dev Task, Task, Technical Task) and keywords
+    - Excludes non-development link types (duplicates, blocks) unless they are development tasks
+    - Combines and deduplicates subtasks and linked issues into unified development task list
+    - Updated presentation table to include "Source" column indicating whether task is a subtask or linked issue
+    - Stores both `JIRA_SUBTASKS` and `JIRA_LINKED_ISSUES` variables for branch naming workflow
+  - **Benefits**:
+    - Provides more comprehensive view of development tasks associated with user stories
+    - Supports different Jira workflows where development tasks may be represented as linked issues instead of subtasks
+    - Improves flexibility for teams using various Jira issue linking strategies
+    - Maintains backward compatibility with existing subtask-only workflows
+
+- **Context Command Backup Deletion Optimization**: Improved clarity and reliability of backup file cleanup in reverse-engineering workflow
+  - **Context Workflow (`context.md`)**:
+    - Made Post-Write Phase backup deletion instructions more explicit and actionable
+    - Bolded deletion command to emphasize required action
+    - Added explicit file pattern reference (`project-context.md.backup.YYYYMMDD_HHMMSS`)
+    - Added directive "(use file deletion operation)" to signal concrete action required
+    - Added confirmation step to verify deletion succeeded
+    - Made restoration steps more explicit with detailed copy operation instructions
+  - **Benefits**:
+    - Prevents agents from skipping or misinterpreting backup cleanup step
+    - Reduces user intervention required during project-context.md generation
+    - Improves workflow reliability and user experience
+    - Ensures cleanup happens automatically after successful verification
+
 ## [0.1.14] - 2026-02-28
 
 ### Added

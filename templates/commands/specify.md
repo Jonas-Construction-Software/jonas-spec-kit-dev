@@ -80,7 +80,7 @@ Before treating the user's message after `/speckit.specify` as the feature descr
    Use `mcp_com_atlassian_getJiraIssue()` with:
    - `cloudId`: from step 2
    - `issueIdOrKey`: provided by user
-   - `fields`: `["summary", "description", "issuetype", "status", "subtasks", "customfield_*"]`
+   - `fields`: `["summary", "description", "issuetype", "status", "subtasks", "issuelinks", "customfield_*"]`
    
    **Error handling**:
    - If issue not found (404):
@@ -177,6 +177,7 @@ Before treating the user's message after `/speckit.specify` as the feature descr
    - `JIRA_STORY_KEY` = the user story key (e.g., PROJ-123)
    - `JIRA_CLOUD_ID` = the cloud ID from step 2
    - `JIRA_SUBTASKS` = the subtasks field from the retrieved issue (if any)
+   - `JIRA_LINKED_ISSUES` = the issuelinks field from the retrieved issue (if any)
 
 ### If the user answers **No**
 
@@ -226,14 +227,27 @@ Given that finalized feature description (from Step 0), do this:
    
    If `JIRA_STORY_IMPORTED = true`:
    
-   1. **Check for subtasks in the imported story**:
+   1. **Check for development tasks in the imported story**:
       
-      Examine the `JIRA_SUBTASKS` field from Step 0. Subtasks in Jira are often used as development tasks.
+      Examine both `JIRA_SUBTASKS` and `JIRA_LINKED_ISSUES` fields from Step 0. Development tasks can be represented as either subtasks or linked issues in Jira.
+      
+      a. **Process Subtasks**:
       
       Filter subtasks to identify those that appear to be development tasks:
       - Look for issue types: "Development Task", "Dev Task", "Task", "Sub-task", "Technical Task"
       - Look for keywords in summary: "dev", "development", "implement", "code", "technical"
       - Include all subtasks if unable to determine which are development-specific
+      
+      b. **Process Linked Issues**:
+      
+      Filter linked issues to identify development tasks:
+      - Look for link types: "implements", "is implemented by", "relates to", "depends on", "rolls up into", "breaks down into"
+      - Check the linked issue's type: "Development Task", "Dev Task", "Task", "Technical Task"
+      - Exclude link types like "duplicates", "is duplicated by", "blocks", "is blocked by" (unless they are development tasks)
+      
+      c. **Combine Results**:
+      
+      Merge both lists (subtasks and linked issues) into a single list of development tasks, removing duplicates if any.
    
    2. **If development tasks are found**:
       
@@ -244,13 +258,13 @@ Given that finalized feature description (from Step 0), do this:
       
       I found the following development tasks associated with this user story:
       
-      | Option | Task Key | Summary | Status |
-      |--------|----------|---------|--------|
-      | 1      | {TASK_KEY_1} | {SUMMARY_1} | {STATUS_1} |
-      | 2      | {TASK_KEY_2} | {SUMMARY_2} | {STATUS_2} |
-      | ...    | ...      | ...     | ...    |
-      | M      | Manual entry | Enter a different Jira development task key | - |
-      | N      | No dev task | Use auto-numbering instead (001-, 002-, etc.) | - |
+      | Option | Task Key | Summary | Status | Source |
+      |--------|----------|---------|--------|--------|
+      | 1      | {TASK_KEY_1} | {SUMMARY_1} | {STATUS_1} | Subtask |
+      | 2      | {TASK_KEY_2} | {SUMMARY_2} | {STATUS_2} | Linked Issue |
+      | ...    | ...      | ...     | ...    | ...    |
+      | M      | Manual entry | Enter a different Jira development task key | - | - |
+      | N      | No dev task | Use auto-numbering instead (001-, 002-, etc.) | - | - |
       
       **Which option would you like to use for the branch prefix?** (Enter 1, 2, ..., M, or N):
       ```
@@ -259,6 +273,7 @@ Given that finalized feature description (from Step 0), do this:
       - Use consistent spacing with pipes aligned
       - Each cell should have spaces around content: `| Content |` not `|Content|`
       - Header separator must have at least 3 dashes: `|--------|`
+      - Include "Source" column to indicate whether the task is a subtask or a linked issue
    
    3. **Handle user's selection**:
       
@@ -278,7 +293,7 @@ Given that finalized feature description (from Step 0), do this:
    
    4. **If no development tasks are found OR MCP server fails**:
       
-      - Log a note: "No development tasks found for {JIRA_STORY_KEY}, asking for manual input"
+      - Log a note: "No development tasks (subtasks or linked issues) found for {JIRA_STORY_KEY}, asking for manual input"
       - Proceed to step 1.b
    
    5. **Error handling**:
