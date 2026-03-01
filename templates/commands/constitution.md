@@ -35,9 +35,31 @@ If the file exists, treat its contents as the baseline instruction set for
 5. Do not ignore baseline constraints unless the user explicitly requests to
    replace them.
 
+## Workspace Architecture Context
+
+This command operates within the Spec Kit workspace architecture:
+
+**Multi-Repository Workspace**:
+- **`*-document` repository**: Holds ALL planning artifacts including:
+  - `.specify/memory/constitution.md` (this file)
+  - `.specify/templates/` (command and artifact templates)
+  - `.specify/scripts/` (automation scripts)
+  - `.specs/` (feature specifications, plans, tasks, checklists)
+- **Implementation repositories**: Contain source code and `project-context.md` files describing architecture
+- The constitution applies to all work across all repositories in the workspace
+
+**Single-Repository Workspace**:
+- All artifacts and code live together in one repository
+- `.specify/memory/constitution.md` resides at repository root
+- `project-context.md` (if present) also at repository root
+
 ## Outline
 
 You are updating the project constitution at `.specify/memory/constitution.md`. This file is a TEMPLATE containing placeholder tokens in square brackets (e.g. `[PROJECT_NAME]`, `[PRINCIPLE_1_NAME]`). Your job is to (a) collect/derive concrete values, (b) fill the template precisely, and (c) propagate any amendments across dependent artifacts.
+
+**Artifact Location**: 
+- Multi-repo: `.specify/memory/constitution.md` in the `*-document` repository
+- Single-repo: `.specify/memory/constitution.md` at repository root
 
 **Note**: If `.specify/memory/constitution.md` does not exist yet, it should have been initialized from `.specify/templates/constitution-template.md` during project setup. If it's missing, copy the template first.
 
@@ -52,10 +74,11 @@ Follow this execution flow:
      the primary source of truth for principle content.
    - If merged input supplies a value, use it.
     - Otherwise infer from existing repo context (README, docs, prior constitution versions if embedded).
-    - Architectural reference requirement: if `project-context.md` exists, treat it as a primary
+    - **Architectural reference requirement**: if `project-context.md` exists, treat it as a primary
        architectural input when deriving principles, constraints, and governance language.
-    - In multi-repo workspaces, check each repository root for `project-context.md` and
+    - **Multi-repo workspaces**: Check implementation repository roots for `project-context.md` files and
        incorporate relevant architectural constraints into the constitution context.
+    - **Single-repo workspaces**: Check for `project-context.md` at repository root if present.
    - For governance dates: `RATIFICATION_DATE` is the original adoption date (if unknown ask or mark TODO), `LAST_AMENDED_DATE` is today if changes are made, otherwise keep previous.
    - `CONSTITUTION_VERSION` must increment according to semantic versioning rules:
      - MAJOR: Backward incompatible governance/principle removals or redefinitions.
@@ -68,7 +91,7 @@ Follow this execution flow:
    - Preserve heading hierarchy and comments can be removed once replaced unless they still add clarifying guidance.
    - Ensure each Principle section: succinct name line, paragraph (or bullet list) capturing non‑negotiable rules, explicit rationale if not obvious.
    - Ensure Governance section lists amendment procedure, versioning policy, and compliance review expectations.
-    - Ensure the constitution explicitly states that available `project-context.md` files are
+   - Ensure the constitution explicitly states that available `project-context.md` files are
        authoritative architectural references for specification and planning activities.
 
 4. Consistency propagation checklist (convert prior checklist into active validations):

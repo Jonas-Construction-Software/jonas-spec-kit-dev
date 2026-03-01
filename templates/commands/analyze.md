@@ -5,6 +5,26 @@ scripts:
   ps: scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks
 ---
 
+## Workspace Architecture Context
+
+This command operates within the Spec Kit workspace architecture:
+
+**Multi-Repository Workspace**:
+- Analyzes artifacts in `.specs/{feature-name}/` within the `*-document` repository
+- Validates cross-repository consistency using `project-context.md` files from implementation repositories
+- Checks task `[repo-name]` labels for proper cross-repo sequencing
+- This is a READ-ONLY analysis command - no files are modified
+
+**Single-Repository Workspace**:
+- Analyzes artifacts at `.specs/{feature-name}/`
+- All `[repo-name]` labels reference the same repository
+- Validates against single `project-context.md` if present
+- No cross-repository consistency checks needed
+
+**Artifact Location**: All analyzed files (spec.md, plan.md, tasks.md) are in `FEATURE_DIR` which is in the `*-document` repository (multi-repo) or at repository root (single-repo).
+
+---
+
 ## User Input
 
 ```text
@@ -43,11 +63,16 @@ For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot
 **Multi-Repository Workspace Detection**:
 - Detect if running in a multi-repository workspace by checking for multiple `.git` directories in sibling folders or a workspace configuration file
 - If multi-repo workspace detected:
-  - Identify which repository contains the current feature branch based on `FEATURE_DIR` path
-  - Load `project-context.md` from the active repository if it exists
+  - Confirm that `FEATURE_DIR` is in the `*-document` repository (planning artifacts repository)
+  - Load `project-context.md` from implementation repositories if they exist
   - Scan `plan.md` and `tasks.md` for cross-repository references (repository labels like `[shared-contracts]`, `[api-service]`)
   - Load `project-context.md` files from any referenced repositories to validate architectural constraints
   - Build a map of cross-repository dependencies and integration points
+- If single-repo workspace:
+  - All artifacts and code are in the same repository
+  - All `[repo-name]` labels in tasks.md will be identical
+  - Load single `project-context.md` from repository root if it exists
+  - Skip cross-repository consistency checks
 
 ### 2. Load Artifacts (Progressive Disclosure)
 

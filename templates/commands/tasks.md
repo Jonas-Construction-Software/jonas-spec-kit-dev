@@ -14,6 +14,25 @@ scripts:
   ps: scripts/powershell/check-prerequisites.ps1 -Json
 ---
 
+## Workspace Architecture Context
+
+This command operates within the Spec Kit workspace architecture:
+
+**Multi-Repository Workspace**:
+- **tasks.md** is created in `.specs/{feature-name}/` within the `*-document` repository
+- **[repo-name] labels** identify which implementation repository each task targets
+- Multiple distinct `[repo-name]` values indicate cross-repository work
+- Implementation branches are created later by `/speckit.implement`
+
+**Single-Repository Workspace**:
+- **tasks.md** is created at `.specs/{feature-name}/`
+- **[repo-name] labels** are still REQUIRED for consistency but all reference the same repository
+- All `[repo-name]` values will be identical (the current repository name)
+
+**Artifact Location**: tasks.md is ALWAYS created in `FEATURE_DIR` which is in the `*-document` repository (multi-repo) or at repository root (single-repo).
+
+---
+
 ## User Input
 
 ```text
@@ -29,11 +48,15 @@ You **MUST** consider the user input before proceeding (if not empty).
    **Multi-Repository Workspace Detection**:
    - Detect if running in a multi-repository workspace by checking for multiple `.git` directories in sibling folders or a workspace configuration file
    - If multi-repo workspace detected:
-     - Identify which repository contains the current feature branch based on `FEATURE_DIR` path
-     - Load `project-context.md` from the active repository if it exists
+     - Confirm that `FEATURE_DIR` is in the `*-document` repository (planning artifacts repository)
+     - Load `project-context.md` from implementation repositories if they exist
      - Check `plan.md` for cross-repository dependencies or integration points
      - Scan for `project-context.md` files in sibling repositories mentioned in the plan
      - Note any cross-repository task dependencies that must be sequenced
+   - If single-repo workspace:
+     - All `[repo-name]` labels will reference the current repository name
+     - Load `project-context.md` from repository root if it exists
+     - No cross-repository coordination needed
 
 2. **Load design documents**: Read from FEATURE_DIR:
    - **Required**: plan.md (tech stack, libraries, structure), spec.md (user stories with priorities)

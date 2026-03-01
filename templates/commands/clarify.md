@@ -9,6 +9,24 @@ scripts:
    ps: scripts/powershell/check-prerequisites.ps1 -Json -PathsOnly
 ---
 
+## Workspace Architecture Context
+
+This command operates within the Spec Kit workspace architecture:
+
+**Multi-Repository Workspace**:
+- Specifications live in `.specs/{feature-name}/` within the `*-document` repository
+- `project-context.md` files in implementation repositories provide architectural constraints
+- This command updates the spec in the *-document repository
+
+**Single-Repository Workspace**:
+- All artifacts (specs, plans, code) live together in one repository
+- `.specs/{feature-name}/` at repository root
+- `project-context.md` (if present) also at repository root
+
+**Artifact Location**: `FEATURE_SPEC` is always in the `*-document` repository (multi-repo) or at repository root (single-repo).
+
+---
+
 ## User Input
 
 ```text
@@ -35,9 +53,12 @@ Execution steps:
    **Multi-Repository Detection**:
    - Detect if running in a multi-repository workspace by checking for multiple `.git` directories in sibling folders or a workspace configuration file
    - If multi-repo workspace detected:
-     - Identify which repository contains the current feature branch based on `FEATURE_DIR` path
-     - Load `project-context.md` from the active repository if it exists
+     - Identify which repository contains the current feature branch based on `FEATURE_DIR` path (should be `*-document` repository)
+     - Load `project-context.md` from implementation repositories if they exist
      - Note any cross-repository dependencies or constraints mentioned in the feature spec
+   - If single-repo workspace:
+     - All artifacts and code are in the same repository
+     - Load `project-context.md` from repository root if it exists
 
 2. Load the current spec file. Perform a structured ambiguity & coverage scan using this taxonomy. For each category, mark status: Clear / Partial / Missing. Produce an internal coverage map used for prioritization (do not output raw map unless no questions will be asked).
 

@@ -5,6 +5,25 @@ scripts:
   ps: scripts/powershell/check-prerequisites.ps1 -Json
 ---
 
+## Workspace Architecture Context
+
+This command operates within the Spec Kit workspace architecture:
+
+**Multi-Repository Workspace**:
+- Checklists are created in `.specs/{feature-name}/checklists/` within the `*-document` repository
+- Checklists validate the quality of requirements in spec.md (also in `*-document` repository)
+- No multi-repo specific logic needed - checklists test requirements quality, not implementation
+
+**Single-Repository Workspace**:
+- Checklists are created at `.specs/{feature-name}/checklists/`
+- All artifacts (checklists, specs, code) live together in one repository
+
+**Artifact Location**: Checklists are ALWAYS created in `FEATURE_DIR/checklists/` which is in the `*-document` repository (multi-repo) or at repository root (single-repo).
+
+**Key Principle**: Checklists are "unit tests for English" - they validate requirements writing quality, not implementation correctness. Therefore, they don't need cross-repository coordination even in multi-repo workspaces.
+
+---
+
 ## Checklist Purpose: "Unit Tests for English"
 
 **CRITICAL CONCEPT**: Checklists are **UNIT TESTS FOR REQUIREMENTS WRITING** - they validate the quality, clarity, and completeness of requirements in a given domain.

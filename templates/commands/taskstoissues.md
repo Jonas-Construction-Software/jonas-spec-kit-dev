@@ -6,6 +6,25 @@ scripts:
   ps: scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks
 ---
 
+## Workspace Architecture Context
+
+This command operates within the Spec Kit workspace architecture:
+
+**Multi-Repository Workspace**:
+- Reads tasks from `.specs/{feature-name}/tasks.md` in the `*-document` repository
+- **CRITICAL**: GitHub issues are created in the Git remote repository, which may be different from the `*-document` repository
+- Use `[repo-name]` labels in tasks to determine which repository should receive issues
+- For cross-repo tasks, create issues in the target implementation repository
+
+**Single-Repository Workspace**:
+- Reads tasks from `.specs/{feature-name}/tasks.md` at repository root
+- Creates issues in the current repository (same as Git remote)
+- All `[repo-name]` labels reference the same repository
+
+**Important**: This command converts tasks to GitHub issues. Always verify the Git remote matches the intended issue repository before proceeding.
+
+---
+
 ## User Input
 
 ```text
