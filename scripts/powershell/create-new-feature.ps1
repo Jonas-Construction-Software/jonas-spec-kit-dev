@@ -2,6 +2,7 @@
 # Create a new feature
 [CmdletBinding()]
 param(
+    [string]$Description,
     [switch]$Json,
     [string]$ShortName,
     [int]$Number = 0,
@@ -14,9 +15,11 @@ $ErrorActionPreference = 'Stop'
 
 # Show help if requested
 if ($Help) {
-    Write-Host "Usage: ./create-new-feature.ps1 [-Json] [-ShortName <name>] [-Number N] [-CustomPrefix <prefix>] <feature description>"
+    Write-Host "Usage: ./create-new-feature.ps1 -Description <desc> [-Json] [-ShortName <name>] [-Number N] [-CustomPrefix <prefix>]"
+    Write-Host "   OR: ./create-new-feature.ps1 [-Json] [-ShortName <name>] [-Number N] [-CustomPrefix <prefix>] <feature description>"
     Write-Host ""
     Write-Host "Options:"
+    Write-Host "  -Description <desc> Feature description (recommended when using switches)"
     Write-Host "  -Json               Output in JSON format"
     Write-Host "  -ShortName <name>   Provide a custom short name (2-4 words) for the branch"
     Write-Host "  -Number N           Specify branch number manually (overrides auto-detection)"
@@ -24,19 +27,31 @@ if ($Help) {
     Write-Host "  -Help               Show this help message"
     Write-Host ""
     Write-Host "Examples:"
+    Write-Host "  ./create-new-feature.ps1 -Description 'Add user authentication' -Json -ShortName 'user-auth'"
+    Write-Host "  ./create-new-feature.ps1 -Description 'Add user auth' -Json -CustomPrefix 'FT-53' -ShortName 'user-auth'"
     Write-Host "  ./create-new-feature.ps1 'Add user authentication system' -ShortName 'user-auth'"
-    Write-Host "  ./create-new-feature.ps1 'Implement OAuth2 integration for API'"
-    Write-Host "  ./create-new-feature.ps1 'Add user auth' -CustomPrefix 'FT-53' -ShortName 'user-auth'"
     exit 0
 }
 
-# Check if feature description provided
-if (-not $FeatureDescription -or $FeatureDescription.Count -eq 0) {
-    Write-Error "Usage: ./create-new-feature.ps1 [-Json] [-ShortName <name>] <feature description>"
-    exit 1
+# Combine Description parameter and remaining arguments for backward compatibility
+$featureDesc = ""
+if ($Description) {
+    $featureDesc = $Description.Trim()
+}
+if ($FeatureDescription -and $FeatureDescription.Count -gt 0) {
+    $remainingDesc = ($FeatureDescription -join ' ').Trim()
+    if ($featureDesc) {
+        $featureDesc = "$featureDesc $remainingDesc"
+    } else {
+        $featureDesc = $remainingDesc
+    }
 }
 
-$featureDesc = ($FeatureDescription -join ' ').Trim()
+# Check if feature description provided
+if (-not $featureDesc) {
+    Write-Error "Usage: ./create-new-feature.ps1 -Description <desc> [-Json] [-ShortName <name>] OR ./create-new-feature.ps1 <feature description>"
+    exit 1
+}
 
 # Resolve repository root. Prefer git information when available, but fall back
 # to searching for repository markers so the workflow still functions in repositories that

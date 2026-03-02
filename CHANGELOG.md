@@ -7,6 +7,32 @@ Recent changes to the Specify CLI and templates are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.16] - 2026-03-01
+
+### Fixed
+
+- **PowerShell Parameter Binding Issue in Feature Creation Script**: Resolved PowerShell parameter binding error when using `-Json` switch with positional arguments
+  - **Issue**: Command `create-new-feature.ps1 -Json -CustomPrefix "OCR-338" -ShortName "analysis-stuck-actions" "Improve UX for stuck analysis"` failed with error: `Cannot convert value "Improve UX for stuck analysis" to type "System.Boolean"`
+  - **Root Cause**: PowerShell's parameter binding algorithm incorrectly attempted to bind the positional feature description string to the `-Json` switch parameter
+  - **PowerShell Script (`create-new-feature.ps1`)**:
+    - Added explicit `-Description` parameter as the first parameter to prevent binding confusion
+    - Maintained backward compatibility with `ValueFromRemainingArguments` for positional usage
+    - Combines both parameter values if somehow both are provided
+    - Updated help documentation with recommended and legacy usage patterns
+  - **Bash Script (`create-new-feature.sh`)**:
+    - Added matching `--description` parameter for consistency with PowerShell version
+    - Ensures identical interface across both platforms
+    - Maintains backward compatibility with positional arguments
+    - Updated help documentation to match PowerShell examples
+  - **Specify Workflow (`specify.md`)**:
+    - Updated script invocations to use explicit description parameter: `-Description "{ARGS}"` (PowerShell) and `--description "{ARGS}"` (Bash)
+    - Updated all example commands throughout the document to use recommended explicit parameter syntax
+  - **Benefits**:
+    - Prevents parameter binding confusion when using switches with positional arguments
+    - Provides consistent, self-documenting interface across both scripts
+    - Maintains full backward compatibility with existing usage patterns
+    - Improves robustness and clarity of script invocations
+
 ## [0.1.15] - 2026-03-01
 
 ### Enhanced

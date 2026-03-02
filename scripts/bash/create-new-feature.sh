@@ -2,6 +2,7 @@
 
 set -e
 
+DESCRIPTION=""
 JSON_MODE=false
 SHORT_NAME=""
 BRANCH_NUMBER=""
@@ -11,6 +12,19 @@ i=1
 while [ $i -le $# ]; do
     arg="${!i}"
     case "$arg" in
+        --description)
+            if [ $((i + 1)) -gt $# ]; then
+                echo 'Error: --description requires a value' >&2
+                exit 1
+            fi
+            i=$((i + 1))
+            next_arg="${!i}"
+            if [[ "$next_arg" == --* ]]; then
+                echo 'Error: --description requires a value' >&2
+                exit 1
+            fi
+            DESCRIPTION="$next_arg"
+            ;;
         --json) 
             JSON_MODE=true 
             ;;
@@ -55,9 +69,11 @@ while [ $i -le $# ]; do
             CUSTOM_PREFIX="$next_arg"
             ;;
         --help|-h) 
-            echo "Usage: $0 [--json] [--short-name <name>] [--number N] [--custom-prefix <prefix>] <feature_description>"
+            echo "Usage: $0 --description <desc> [--json] [--short-name <name>] [--number N] [--custom-prefix <prefix>]"
+            echo "   OR: $0 [--json] [--short-name <name>] [--number N] [--custom-prefix <prefix>] <feature_description>"
             echo ""
             echo "Options:"
+            echo "  --description <desc>    Feature description (recommended when using switches)"
             echo "  --json                  Output in JSON format"
             echo "  --short-name <name>     Provide a custom short name (2-4 words) for the branch"
             echo "  --number N              Specify branch number manually (overrides auto-detection)"
@@ -65,9 +81,9 @@ while [ $i -le $# ]; do
             echo "  --help, -h              Show this help message"
             echo ""
             echo "Examples:"
+            echo "  $0 --description 'Add user authentication' --json --short-name 'user-auth'"
+            echo "  $0 --description 'Add user auth' --json --custom-prefix 'FT-53' --short-name 'user-auth'"
             echo "  $0 'Add user authentication system' --short-name 'user-auth'"
-            echo "  $0 'Implement OAuth2 integration for API' --number 5"
-            echo "  $0 'Add user auth' --custom-prefix 'FT-53' --short-name 'user-auth'"
             exit 0
             ;;
         *) 
@@ -77,9 +93,19 @@ while [ $i -le $# ]; do
     i=$((i + 1))
 done
 
-FEATURE_DESCRIPTION="${ARGS[*]}"
+# Combine --description parameter and remaining arguments for backward compatibility
+FEATURE_DESCRIPTION="$DESCRIPTION"
+if [ ${#ARGS[@]} -gt 0 ]; then
+    REMAINING_DESC="${ARGS[*]}"
+    if [ -n "$FEATURE_DESCRIPTION" ]; then
+        FEATURE_DESCRIPTION="$FEATURE_DESCRIPTION $REMAINING_DESC"
+    else
+        FEATURE_DESCRIPTION="$REMAINING_DESC"
+    fi
+fi
+
 if [ -z "$FEATURE_DESCRIPTION" ]; then
-    echo "Usage: $0 [--json] [--short-name <name>] [--number N] <feature_description>" >&2
+    echo "Usage: $0 --description <desc> [--json] [--short-name <name>] OR $0 <feature_description>" >&2
     exit 1
 fi
 

@@ -12,8 +12,8 @@ handoffs:
     prompt: Clarify specification requirements
     send: true
 scripts:
-  sh: scripts/bash/create-new-feature.sh --json "{ARGS}"
-  ps: scripts/powershell/create-new-feature.ps1 -Json "{ARGS}"
+  sh: scripts/bash/create-new-feature.sh --description "{ARGS}" --json
+  ps: scripts/powershell/create-new-feature.ps1 -Description "{ARGS}" -Json
 ---
 
 ## Workspace Architecture Context
@@ -357,12 +357,12 @@ Given that finalized feature description (from Step 0), do this:
         
         Bash:
         ```bash
-        scripts/bash/create-new-feature.sh --json --custom-prefix "{DEV_TASK_KEY}" --short-name "{short-name}" "{brief-summary}"
+        scripts/bash/create-new-feature.sh --description "{brief-summary}" --json --custom-prefix "{DEV_TASK_KEY}" --short-name "{short-name}"
         ```
         
         PowerShell:
         ```powershell
-        scripts/powershell/create-new-feature.ps1 -Json -CustomPrefix "{DEV_TASK_KEY}" -ShortName "{short-name}" "{brief-summary}"
+        scripts/powershell/create-new-feature.ps1 -Description "{brief-summary}" -Json -CustomPrefix "{DEV_TASK_KEY}" -ShortName "{short-name}"
         ```
       
       - The script will create: Branch `{DEV_TASK_KEY}-{short-name}` and directory `specs/{DEV_TASK_KEY}-{short-name}`
@@ -391,12 +391,12 @@ Given that finalized feature description (from Step 0), do this:
          
          Bash:
          ```bash
-         scripts/bash/create-new-feature.sh --json --number {N+1} --short-name "{short-name}" "{brief-summary}"
+         scripts/bash/create-new-feature.sh --description "{brief-summary}" --json --number {N+1} --short-name "{short-name}"
          ```
          
          PowerShell:
          ```powershell
-         scripts/powershell/create-new-feature.ps1 -Json -Number {N+1} -ShortName "{short-name}" "{brief-summary}"
+         scripts/powershell/create-new-feature.ps1 -Description "{brief-summary}" -Json -Number {N+1} -ShortName "{short-name}"
          ```
          
          **Generate a brief summary** from `FEATURE_DESCRIPTION`:
