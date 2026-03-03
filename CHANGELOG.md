@@ -7,6 +7,33 @@ Recent changes to the Specify CLI and templates are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.17] - 2026-03-02
+
+### Added
+
+- **Multi-Repository Workspace Auto-Switching for Planning Commands**: Standardized repository location validation across all planning commands
+  - **All Planning Commands** (`constitution.md`, `specify.md`, `clarify.md`, `plan.md`, `tasks.md`, `analyze.md`):
+    - Added "Step 0: Repository Location Validation (Multi-Repo Workspaces)" section
+    - Commands now automatically detect multi-repo vs single-repo workspaces
+    - **Automatic switching**: When run from an implementation repository, commands automatically switch to the `*-document` repository before execution
+    - Reports switching action: `📂 Switched to planning repository: <repo-name>-document`
+    - Provides clear error if `*-document` repository not found in multi-repo workspace
+    - Single-repo workspaces skip validation entirely (no performance impact)
+  - **Benefits**:
+    - Users can run planning commands from any repository in the workspace
+    - Ensures planning artifacts are always created in the correct location
+    - Fail-fast behavior with clear error messages
+    - Transparent and automatic - no manual navigation required
+  - **Exception**: `/speckit.context` intentionally runs from implementation repos and skips `*-document` repositories
+
+### Changed
+
+- **README.md Workflow Reordering**: Updated "Get Started" section to reflect recommended workflow sequence
+  - **Step 2**: Gather implementation context (`/speckit.context`) - moved from step 3
+  - **Step 3**: Establish project principles (`/speckit.constitution`) - moved from step 2
+  - Rationale: Context gathering should occur before establishing principles to inform principle creation
+  - Updated "Detailed Process" section to match the new ordering
+
 ## [0.1.16] - 2026-03-01
 
 ### Fixed

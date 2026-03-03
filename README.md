@@ -89,22 +89,22 @@ uvx --from git+https://github.com/Jonas-Construction-Software/jonas-spec-kit.git
 - Better tool management with `uv tool list`, `uv tool upgrade`, `uv tool uninstall`
 - Cleaner shell configuration
 
-### 2. Establish project principles
+### 2. Gather implementation context
 
 Launch your AI assistant in the project directory. The `/speckit.*` commands are available in the assistant.
+
+Use the **`/speckit.context`** command to research and capture domain and implementation context before specification. This command analyzes your workspace, generates `project-context.md` files with architectural insights, and establishes foundational understanding.
+
+```bash
+/speckit.context Focus on user workflows, existing constraints, library compatibility, and security requirements for this product area.
+```
+
+### 3. Establish project principles
 
 Use the **`/speckit.constitution`** command to create your project's governing principles and development guidelines that will guide all subsequent development.
 
 ```bash
 /speckit.constitution Create principles focused on code quality, testing standards, user experience consistency, and performance requirements
-```
-
-### 3. Gather implementation context
-
-Use the **`/speckit.context`** command to research and capture domain and implementation context before specification.
-
-```bash
-/speckit.context Focus on user workflows, existing constraints, library compatibility, and security requirements for this product area.
 ```
 
 ### 4. Create the spec
@@ -408,7 +408,7 @@ The CLI will check if you have Claude Code, Gemini CLI, Cursor CLI, Qwen CLI, op
 specify init <project_name> --ai claude --ignore-agent-tools
 ```
 
-### **STEP 1:** Establish project principles
+### **STEP 1:** Gather project context
 
 Go to the project folder and run your AI agent. In our example, we're using `claude`.
 
@@ -416,17 +416,7 @@ Go to the project folder and run your AI agent. In our example, we're using `cla
 
 You will know that things are configured correctly if you see the `/speckit.constitution`, `/speckit.context`, `/speckit.specify`, `/speckit.plan`, `/speckit.tasks`, and `/speckit.implement` commands available.
 
-The first step should be establishing your project's governing principles using the `/speckit.constitution` command. This helps ensure consistent decision-making throughout all subsequent development phases:
-
-```text
-/speckit.constitution Create principles focused on code quality, testing standards, user experience consistency, and performance requirements. Include governance for how these principles should guide technical decisions and implementation choices.
-```
-
-This step creates or updates the `.specify/memory/constitution.md` file with your project's foundational guidelines that the AI agent will reference during specification, planning, and implementation phases.
-
-### **STEP 2:** Gather project context
-
-With your project principles established, gather relevant context before drafting the specification. Use the `/speckit.context` command to capture constraints, dependencies, and domain details that should shape the spec.
+The first step should be gathering relevant context before drafting specifications. Use the `/speckit.context` command to capture constraints, dependencies, and domain details that should shape the spec.
 
 Example context prompt:
 
@@ -434,9 +424,19 @@ Example context prompt:
 /speckit.context Research domain constraints, similar product patterns, expected user workflows, and known performance/security requirements for a team productivity platform.
 ```
 
+### **STEP 2:** Establish project principles
+
+With project context gathered, establish your project's governing principles using the `/speckit.constitution` command. This helps ensure consistent decision-making throughout all subsequent development phases:
+
+```text
+/speckit.constitution Create principles focused on code quality, testing standards, user experience consistency, and performance requirements. Include governance for how these principles should guide technical decisions and implementation choices.
+```
+
+This step creates or updates the `.specify/memory/constitution.md` file with your project's foundational guidelines that the AI agent will reference during specification, planning, and implementation phases.
+
 ### **STEP 3:** Create project specifications
 
-After context is collected, create the functional specification. Use the `/speckit.specify` command and provide concrete requirements for the project you want to develop.
+After context is collected and principles are established, create the functional specification. Use the `/speckit.specify` command and provide concrete requirements for the project you want to develop.
 
 > [!IMPORTANT]
 > Be as explicit as possible about *what* you are trying to build and *why*. **Do not focus on the tech stack at this point**.

@@ -14,6 +14,33 @@ scripts:
   ps: scripts/powershell/check-prerequisites.ps1 -Json
 ---
 
+## 0. Repository Location Validation (Multi-Repo Workspaces)
+
+**Before executing any steps below:**
+
+1. **Detect workspace type**:
+   - Check for multiple `.git` directories in parent/sibling folders
+   - If found → multi-repository workspace
+   - If not found → single-repository workspace (skip to Workspace Architecture Context section)
+
+2. **For multi-repo workspaces only**:
+   - Identify current repository name from `.git/config` or current directory
+   - If current repository name ends with `-document`:
+     ✅ Proceed to Workspace Architecture Context section (already in correct repository)
+   - If current repository does NOT end with `-document`:
+     a. Search sibling directories for `*-document` repository
+     b. If found:
+        - **Switch working directory** to `*-document` repository root
+        - Report: `📂 Switched to planning repository: <repo-name>-document`
+        - Proceed to Workspace Architecture Context section
+     c. If NOT found:
+        ❌ ERROR: "Multi-repo workspace detected but no *-document repository found. Planning artifacts must live in a repository ending with '-document'. Please create one or run this command from the document repository."
+        - Exit with error code 1
+
+3. **For single-repo workspaces**:
+   - No switching needed - all artifacts in current repository
+   - Proceed to Workspace Architecture Context section
+
 ## Workspace Architecture Context
 
 This command operates within the Spec Kit workspace architecture:
