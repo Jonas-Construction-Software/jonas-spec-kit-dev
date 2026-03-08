@@ -508,7 +508,8 @@ class TestNewProjectCommandSkip:
         def fake_download(project_path, *args, **kwargs):
             self._fake_extract("kiro-cli", project_path)
 
-        with patch("specify_cli.download_and_extract_template", side_effect=fake_download), \
+        with patch("specify_cli.show_banner"), \
+             patch("specify_cli.download_and_extract_template", side_effect=fake_download), \
              patch("specify_cli.ensure_executable_scripts"), \
              patch("specify_cli.ensure_constitution_from_template"), \
              patch("specify_cli.install_ai_skills", return_value=True) as mock_skills, \
@@ -566,7 +567,8 @@ class TestNewProjectCommandSkip:
         def fake_download(project_path, *args, **kwargs):
             pass  # commands already exist, no need to re-create
 
-        with patch("specify_cli.download_and_extract_template", side_effect=fake_download), \
+        with patch("specify_cli.show_banner"), \
+             patch("specify_cli.download_and_extract_template", side_effect=fake_download), \
              patch("specify_cli.ensure_executable_scripts"), \
              patch("specify_cli.ensure_constitution_from_template"), \
              patch("specify_cli.install_ai_skills", return_value=True), \
@@ -673,7 +675,8 @@ class TestCliValidation:
         runner = CliRunner()
         target = tmp_path / "kiro-alias-proj"
 
-        with patch("specify_cli.download_and_extract_template") as mock_download, \
+        with patch("specify_cli.show_banner"), \
+             patch("specify_cli.download_and_extract_template") as mock_download, \
              patch("specify_cli.ensure_executable_scripts"), \
              patch("specify_cli.ensure_constitution_from_template"), \
              patch("specify_cli.is_git_repo", return_value=False), \
