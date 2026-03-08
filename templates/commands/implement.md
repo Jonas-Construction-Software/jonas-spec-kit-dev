@@ -168,7 +168,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **Rust**: `target/`, `debug/`, `release/`, `*.rs.bk`, `*.rlib`, `*.prof*`, `.idea/`, `*.log`, `.env*`
    - **Kotlin**: `build/`, `out/`, `.gradle/`, `.idea/`, `*.class`, `*.jar`, `*.iml`, `*.log`, `.env*`
    - **C++**: `build/`, `bin/`, `obj/`, `out/`, `*.o`, `*.so`, `*.a`, `*.exe`, `*.dll`, `.idea/`, `*.log`, `.env*`
-   - **C**: `build/`, `bin/`, `obj/`, `out/`, `*.o`, `*.a`, `*.so`, `*.exe`, `Makefile`, `config.log`, `.idea/`, `*.log`, `.env*`
+   - **C**: `build/`, `bin/`, `obj/`, `out/`, `*.o`, `*.a`, `*.so`, `*.exe`, `*.dll`, `autom4te.cache/`, `config.status`, `config.log`, `.idea/`, `*.log`, `.env*`
    - **Swift**: `.build/`, `DerivedData/`, `*.swiftpm/`, `Packages/`
    - **R**: `.Rproj.user/`, `.Rhistory`, `.RData`, `.Ruserdata`, `*.Rproj`, `packrat/`, `renv/`
    - **Universal**: `.DS_Store`, `Thumbs.db`, `*.tmp`, `*.swp`, `.vscode/`, `.idea/`
@@ -239,3 +239,32 @@ You **MUST** consider the user input before proceeding (if not empty).
 **IMPORTANT**: Do NOT commit any changes. All changes must remain uncommitted (staged or unstaged) for user review before committing. This applies to both single-repository and multi-repository implementations.
 
 Note: This command assumes a complete task breakdown exists in tasks.md. If tasks are incomplete or missing, suggest running `/speckit.tasks` first to regenerate the task list.
+
+10. **Check for extension hooks**: After completion validation, check if `.specify/extensions.yml` exists in the project root.
+    - If it exists, read it and look for entries under the `hooks.after_implement` key
+    - If the YAML cannot be parsed or is invalid, skip hook checking silently and continue normally
+    - Filter to only hooks where `enabled: true`
+    - For each remaining hook, do **not** attempt to interpret or evaluate hook `condition` expressions:
+      - If the hook has no `condition` field, or it is null/empty, treat the hook as executable
+      - If the hook defines a non-empty `condition`, skip the hook and leave condition evaluation to the HookExecutor implementation
+    - For each executable hook, output the following based on its `optional` flag:
+      - **Optional hook** (`optional: true`):
+        ```
+        ## Extension Hooks
+
+        **Optional Hook**: {extension}
+        Command: `/{command}`
+        Description: {description}
+
+        Prompt: {prompt}
+        To execute: `/{command}`
+        ```
+      - **Mandatory hook** (`optional: false`):
+        ```
+        ## Extension Hooks
+
+        **Automatic Hook**: {extension}
+        Executing: `/{command}`
+        EXECUTE_COMMAND: {command}
+        ```
+    - If no hooks are registered or `.specify/extensions.yml` does not exist, skip silently
