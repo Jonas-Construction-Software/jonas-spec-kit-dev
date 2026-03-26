@@ -7,6 +7,7 @@ JSON_MODE=false
 SHORT_NAME=""
 BRANCH_NUMBER=""
 CUSTOM_PREFIX=""
+USE_TIMESTAMP=false
 ARGS=()
 i=1
 while [ $i -le $# ]; do
@@ -68,9 +69,12 @@ while [ $i -le $# ]; do
             fi
             CUSTOM_PREFIX="$next_arg"
             ;;
+        --timestamp)
+            USE_TIMESTAMP=true
+            ;;
         --help|-h) 
-            echo "Usage: $0 --description <desc> [--json] [--short-name <name>] [--number N] [--custom-prefix <prefix>]"
-            echo "   OR: $0 [--json] [--short-name <name>] [--number N] [--custom-prefix <prefix>] <feature_description>"
+            echo "Usage: $0 --description <desc> [--json] [--short-name <name>] [--number N] [--custom-prefix <prefix>] [--timestamp]"
+            echo "   OR: $0 [--json] [--short-name <name>] [--number N] [--custom-prefix <prefix>] [--timestamp] <feature_description>"
             echo ""
             echo "Options:"
             echo "  --description <desc>    Feature description (recommended when using switches)"
@@ -78,6 +82,7 @@ while [ $i -le $# ]; do
             echo "  --short-name <name>     Provide a custom short name (2-4 words) for the branch"
             echo "  --number N              Specify branch number manually (overrides auto-detection)"
             echo "  --custom-prefix <prefix> Use Jira dev task key as prefix (e.g., FT-53, DEV-142)"
+            echo "  --timestamp             Use YYYYMMDD-HHMMSS timestamp prefix instead of sequential number"
             echo "  --help, -h              Show this help message"
             echo ""
             echo "Examples:"
@@ -278,6 +283,12 @@ if [ -n "$CUSTOM_PREFIX" ]; then
         exit 1
     fi
     FEATURE_NUM="$CUSTOM_PREFIX"
+elif [ "$USE_TIMESTAMP" = true ]; then
+    # Warn if --number was also provided (timestamp takes precedence)
+    if [ -n "$BRANCH_NUMBER" ]; then
+        >&2 echo "Warning: --number is ignored when --timestamp is used"
+    fi
+    FEATURE_NUM=$(date +"%Y%m%d-%H%M%S")
 elif [ -z "$BRANCH_NUMBER" ]; then
     if [ "$HAS_GIT" = true ]; then
         # Check existing branches on remotes

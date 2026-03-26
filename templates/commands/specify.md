@@ -1,8 +1,5 @@
 ---
-description: >-
-  Create or update the feature specification. Optionally import from Jira user story 
-  or provide a natural language feature description. Supports Jira dev-task-based branch naming 
-  with auto-discovery of development tasks from imported user stories.
+description: Create or update the feature specification. Optionally import from Jira user story or provide a natural language feature description. Supports Jira dev-task-based branch naming with auto-discovery of development tasks from imported user stories.
 handoffs: 
   - label: Build Technical Plan
     agent: speckit.plan
@@ -225,14 +222,14 @@ Before treating the user's message after `/speckit.specify` as the feature descr
 ## User Input
 
 ```text
-$ARGUMENTS
+{ARGS}
 ```
 
-> **Note**: The `$ARGUMENTS` field is optional. After Step 0, the "feature description" is either:  
+> **Note**: The `{ARGS}` field is optional. After Step 0, the "feature description" is either:  
 > (a) Jira story content (optionally augmented with additional requirements), or  
 > (b) The user's natural-language description provided when prompted in the "No" path
 > 
-> If `$ARGUMENTS` is provided with the initial command, it can be used as a default/fallback, but Step 0 takes precedence.
+> If `{ARGS}` is provided with the initial command, it can be used as a default/fallback, but Step 0 takes precedence.
 
 ---
 
