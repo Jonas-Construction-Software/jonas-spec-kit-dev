@@ -950,7 +950,7 @@ def download_template_from_github(ai_assistant: str, download_dir: Path, *, scri
     }
     return zip_path, metadata
 
-def download_and_extract_template(project_path: Path, ai_assistant: str, script_type: str, is_current_dir: bool = False, *, verbose: bool = True, tracker: StepTracker | None = None, client: httpx.Client = None, debug: bool = False, github_token: str = None, repo_owner: str = DEFAULT_REPO_OWNER, repo_name: str = DEFAULT_REPO_NAME) -> Tuple[Path, dict]:
+def download_and_extract_template(project_path: Path, ai_assistant: str, script_type: str, is_current_dir: bool = False, *, skip_legacy_codex_prompts: bool = False, verbose: bool = True, tracker: StepTracker | None = None, client: httpx.Client = None, debug: bool = False, github_token: str = None, repo_owner: str = DEFAULT_REPO_OWNER, repo_name: str = DEFAULT_REPO_NAME) -> Tuple[Path, dict]:
     """Download the latest release and extract it to create a new project.
     Returns (project_path, metadata). Uses tracker if provided (with keys: fetch, download, extract, cleanup)
     """
@@ -1763,6 +1763,9 @@ def init(
     debug: bool = typer.Option(False, "--debug", help="Show verbose diagnostic output for network and extraction failures"),
     github_token: str = typer.Option(None, "--github-token", help="GitHub token to use for API requests (or set GH_TOKEN or GITHUB_TOKEN environment variable)"),
     ai_skills: bool = typer.Option(False, "--ai-skills", help="Install Prompt.MD templates as agent skills (requires --ai)"),
+    offline: bool = typer.Option(False, "--offline", help="Use assets bundled in the specify-cli package instead of downloading from GitHub (no network access required). Bundled assets will become the default in v0.6.0 and this flag will be removed."),
+    preset: str = typer.Option(None, "--preset", help="Install a preset during initialization (by preset ID)"),
+    branch_numbering: str = typer.Option(None, "--branch-numbering", help="Branch numbering strategy: 'sequential' (001, 002, ...) or 'timestamp' (YYYYMMDD-HHMMSS)"),
     repo_owner: str = typer.Option(DEFAULT_REPO_OWNER, "--repo-owner", help=f"GitHub repo owner for template (default: {DEFAULT_REPO_OWNER})"),
     repo_name: str = typer.Option(DEFAULT_REPO_NAME, "--repo-name", help=f"GitHub repo name for template (default: {DEFAULT_REPO_NAME})"),
 ):
