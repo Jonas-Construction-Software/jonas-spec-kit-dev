@@ -2,7 +2,13 @@
 
 <!-- insert new changelog below this comment -->
 
-## [0.4.2] - 2026-03-25
+## [0.1.21] - 2026-03-26
+
+### Changed
+
+- upstream merge from Spec Kit main branch (release v0.4.2)
+
+## 0.4.2 (upstream) - 2026-03-25
 
 ### Changed
 
@@ -16,7 +22,7 @@
 - Add Community Friends section to README (#1956)
 - docs: add Community Friends section with Spec Kit Assistant VS Code extension (#1944)
 
-## [0.4.1] - 2026-03-24
+## 0.4.1 (upstream) - 2026-03-24
 
 ### Changed
 
@@ -25,7 +31,7 @@
 - docs: add AIDE extension demo to community projects (#1943)
 - fix(templates): add missing Assumptions section to spec template (#1939)
 
-## [0.4.0] - 2026-03-23
+## 0.4.0 (upstream) - 2026-03-23
 
 ### Changed
 
@@ -41,7 +47,7 @@
 - Add support for Junie (#1831)
 - feat: migrate Codex/agy init to native skills workflow (#1906)
 
-## [0.3.2] - 2026-03-19
+## 0.3.2 (upstream) - 2026-03-19
 
 ### Changed
 
@@ -61,7 +67,7 @@
 - Feature/spec kit add pi coding agent pullrequest (#1853)
 - feat: register spec-kit-learn extension (#1883)
 
-## [0.3.1] - 2026-03-17
+## 0.3.1 (upstream) - 2026-03-17
 
 ### Changed
 
@@ -80,7 +86,7 @@
 - feat(extensions): add Archive and Reconcile extensions to community catalog (#1844)
 - feat: Add DocGuard CDD enforcement extension to community catalog (#1838)
 
-## [0.3.0] - 2026-03-13
+## 0.3.0 (upstream) - 2026-03-13
 
 ### Changed
 
@@ -95,7 +101,7 @@
 - feat(extensions): Quality of life improvements for RFC-aligned catalog integration (#1776)
 - Add Java brownfield walkthrough to community walkthroughs (#1820)
 
-## [0.2.1] - 2026-03-11
+## 0.2.1 (upstream) - 2026-03-11
 
 ### Changed
 
@@ -107,7 +113,7 @@
 - feat(extensions): support .extensionignore to exclude files during install (#1781)
 - feat: add Codex support for extension command registration (#1767)
 
-## [0.2.0] - 2026-03-09
+## 0.2.0 (upstream) - 2026-03-09
 
 ### Changed
 
